@@ -34,7 +34,8 @@ Done:
 - Agent screens: assistant start (device-side crisis check and redaction), proposal with disclosure preview and per-item sharing, action trace, demo counsellor view. Locally they run on the scripted provider (D10).
 
 - Deployed: https://haven-agent.haven-worker.workers.dev (Cloudflare account of the owner; D1 `haven`).
-  - The agent is off in production (no LLM configured, so the UI offers manual booking). Locally, `.dev.vars` uses DeepSeek (D11).
+  - The production agent runs on DeepSeek `deepseek-flash` (wrangler var `LLM_PROVIDER`, secret `DEEPSEEK_API_KEY`; D11). It was verified live on 2026-11-26. Locally, `.dev.vars` chooses the provider.
+  - Testing tip: send non-ASCII request bodies from a UTF-8 file (`curl --data-binary @file`). Git Bash argv on Windows can garble Chinese text, which makes tests look like the crisis gate failed.
   - The counsellor view stays locked until the `DEMO_COUNSELLOR_PASSCODE` secret is set.
 
 Next:

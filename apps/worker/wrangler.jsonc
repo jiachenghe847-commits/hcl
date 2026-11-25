@@ -13,6 +13,8 @@
     }
   ],
   "triggers": { "crons": ["17 * * * *"] },
+  // Production LLM (DECISIONS.md D11). The key is the secret DEEPSEEK_API_KEY. `.dev.vars` overrides this locally; tests force "none".
+  "vars": { "LLM_PROVIDER": "deepseek" },
   // One URL for everything (DECISIONS.md D2): the worker answers /api/*, Cloudflare serves the web build for the rest.
   // Build it first: `npm run build -w @haven/web` (the root `npm run deploy` does both).
   "assets": {
