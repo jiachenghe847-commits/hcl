@@ -54,6 +54,7 @@ AGENTS.md            this file (keep under ~100 lines)
 CLAUDE.md            pointer to this file
 docs/CONTRACTS.md    source of truth: module map, D1 schema, HTTP API, agent tools, safety invariants
 docs/DECISIONS.md    dated log of decisions and why
+docs/TEAM.md         setup and PR workflow for group members (humans)
 docs/reference/      original single-file prototype (UI reference for the port)
 apps/web/            React + Vite + TS: src/app (shell, nav, store, i18n), src/features/<feature>, src/api
 apps/worker/         Cloudflare Worker: /api (Hono), D1 migrations in migrations/
