@@ -26,13 +26,13 @@ Done:
 - `packages/safety`
 - `packages/contracts`
 - `apps/worker`: catalog, manual booking, cancel/revoke, counsellor view (S4–S7)
+- `apps/worker/src/agent`: run lifecycle, loop, tools, confirm, rate limits, 24 h cleanup cron. Tested with a scripted fake LLM (`test/fake-llm.ts`).
 
 Next:
-1. Agent loop with a fake LLM (S2, S5), plus rate limits and the 24 h trace cleanup
-2. Anthropic adapter
-3. Port `apps/web` from the prototype
-4. Agent screens
-5. Deploy
+1. Anthropic adapter (`src/llm/`)
+2. Port `apps/web` from the prototype
+3. Agent screens
+4. Deploy
 
 ## Map
 

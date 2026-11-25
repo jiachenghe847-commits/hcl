@@ -16,12 +16,12 @@ import { getOwnedBooking } from './views.js';
 
 const REF_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no 0/O or 1/I look-alikes
 
-function newRefCode(): string {
+export function newRefCode(): string {
   const bytes = crypto.getRandomValues(new Uint8Array(4));
   return 'HV-' + [...bytes].map((b) => REF_ALPHABET[b % REF_ALPHABET.length]).join('');
 }
 
-const newId = (prefix: string) => `${prefix}_${crypto.randomUUID().replaceAll('-', '')}`;
+export const newId = (prefix: string) => `${prefix}_${crypto.randomUUID().replaceAll('-', '')}`;
 
 export interface NewItem {
   kind: 'shared' | 'generalised';

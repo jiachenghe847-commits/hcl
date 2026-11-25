@@ -114,7 +114,7 @@ Auth headers:
 | `GET /api/health` | none | none | same |
 | `GET /api/counsellors` | device | none | same |
 | `GET /api/counsellors/:id/slots?from&to` | device | none | same |
-| `POST /api/agent/runs` (`Idempotency-Key`) | device | creates run; may hold 1 slot | same run returned |
+| `POST /api/agent/runs` (`Idempotency-Key`) | device | creates run; may hold 1 slot. A crisis run returns `201` with status `crisis` (no LLM call). | same run returned, as the stored view without `userLabel` |
 | `GET /api/agent/runs/:id` | owner | none; returns status, trace and the stored proposal, **without** `userLabel` (only the create response has it) | same |
 | `POST /api/agent/runs/:id/confirm` | owner | creates booking + items, clears hold | same booking returned |
 | `POST /api/agent/runs/:id/cancel` | owner | releases hold | no-op |
