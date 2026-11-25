@@ -2,6 +2,8 @@
 
 How group members work on Haven. Agents start from `AGENTS.md` instead.
 
+**What to work on:** [TASKS.md](TASKS.md) (task board: open tasks, untested gaps, owners, deadlines).
+
 ## First time setup · 第一次配置
 
 1. Install **Node.js 22** and **Git**.
