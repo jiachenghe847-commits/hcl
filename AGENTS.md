@@ -29,10 +29,11 @@ Done:
 - `apps/worker/src/agent`: run lifecycle, loop, tools, confirm, rate limits, 24 h cleanup cron. Tested with a scripted fake LLM (`test/fake-llm.ts`).
 - `apps/worker/src/llm/anthropic.ts`: tested against a fake Messages API only. It has **not been run against the real API yet**, because no key is configured.
 
+- `apps/web`: every prototype screen is ported to React. Booking, sessions and revoke use the real API; check-ins stay in localStorage.
+
 Next:
-1. Port `apps/web` from the prototype
-2. Agent screens
-3. Deploy, then a first real-API run with `ANTHROPIC_API_KEY` in `.dev.vars`
+1. Agent screens: "let Haven book for me", disclosure preview, action trace, counsellor view
+2. Deploy (Workers Static Assets for `apps/web/dist`), then a first real-API run with `ANTHROPIC_API_KEY` in `.dev.vars`
 
 ## Map
 
@@ -42,7 +43,7 @@ CLAUDE.md            pointer to this file
 docs/CONTRACTS.md    source of truth: module map, D1 schema, HTTP API, agent tools, safety invariants
 docs/DECISIONS.md    dated log of decisions and why
 docs/reference/      original single-file prototype (UI reference for the port)
-apps/web/            React + Vite + TS front end           (planned)
+apps/web/            React + Vite + TS: src/app (shell, nav, store, i18n), src/features/<feature>, src/api
 apps/worker/         Cloudflare Worker: /api (Hono), D1 migrations in migrations/
 packages/contracts/  zod schemas + types shared by web and worker
 packages/safety/     crisis detector + redaction, pure TS
@@ -92,6 +93,8 @@ Worker only (run inside `apps/worker`):
 - Local secrets live in `.dev.vars`.
 - Tests run inside workerd with a fresh migrated D1 per test file. Tests within one file share storage.
 
+Web: run the worker first, then `npm run dev` in `apps/web`. Vite serves :5173 and proxies `/api` to :8787. Tests use jsdom with a stubbed `fetch`.
+
 When you report work, state the level you verified:
 
 - compiles
@@ -110,4 +113,6 @@ Tests are the spec. Cover edge cases, and for every side effect ask what happens
 | Change booking rules | `docs/CONTRACTS.md` §3–5, then `apps/worker/src/booking/commands.ts` |
 | What a counsellor can see (S4) | `apps/worker/src/booking/views.ts` → `listCounsellorBookings` |
 | Crisis / SOS behaviour | `docs/CONTRACTS.md` §7, then `packages/safety/` |
-| Port a screen from the old prototype | `docs/reference/prototype-v1.html`, then `apps/web/src/features/` |
+| Add or change a screen | `apps/web/src/app/screens.tsx` (registry), then the feature folder |
+| UI text (EN/中文) | `apps/web/src/app/i18n.ts` |
+| Usability-test tasks | `apps/web/src/features/study/tasks.ts` (keep in sync with the SUS form) |
