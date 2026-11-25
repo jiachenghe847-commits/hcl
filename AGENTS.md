@@ -43,7 +43,7 @@ docs/CONTRACTS.md    source of truth: module map, D1 schema, HTTP API, agent too
 docs/DECISIONS.md    dated log of decisions and why
 docs/reference/      original single-file prototype (UI reference for the port)
 apps/web/            React + Vite + TS front end           (planned)
-apps/worker/         Cloudflare Worker: /api, agent loop    (planned)
+apps/worker/         Cloudflare Worker: /api (Hono), D1 migrations in migrations/
 packages/contracts/  zod schemas + types shared by web and worker
 packages/safety/     crisis detector + redaction, pure TS
 ```
@@ -86,6 +86,12 @@ Run from the repo root (Node 20+, `npm install` once):
 
 Packages are consumed as TS source; there is no build step.
 
+Worker only (run inside apps/worker):
+
+- , then , serves the API on localhost:8787.
+- Local secrets live in .
+- Tests run inside workerd with a fresh migrated D1 per test file. Tests within one file share storage.
+
 When you report work, state the level you verified:
 
 - compiles
@@ -101,6 +107,7 @@ Tests are the spec. Cover edge cases, and for every side effect ask what happens
 | Task | Start at |
 |---|---|
 | Change what the agent may do | `docs/CONTRACTS.md` §6, then `apps/worker/src/agent/` |
-| Change booking rules | `docs/CONTRACTS.md` §3–5, then `apps/worker/src/booking/` |
+| Change booking rules | `docs/CONTRACTS.md` §3–5, then `apps/worker/src/booking/commands.ts` |
+| What a counsellor can see (S4) | `apps/worker/src/booking/views.ts` → `listCounsellorBookings` |
 | Crisis / SOS behaviour | `docs/CONTRACTS.md` §7, then `packages/safety/` |
 | Port a screen from the old prototype | `docs/reference/prototype-v1.html`, then `apps/web/src/features/` |

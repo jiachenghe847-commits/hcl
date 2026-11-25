@@ -1,4 +1,4 @@
-# Contracts v1 (approved by owner 2026-11-25)
+# Contracts v1.1 (v1 approved by owner 2026-11-25; v1.1 adds error code `internal`)
 
 This file is the source of truth. Code and tests must match it. To change it, ask the owner first (AGENTS.md rule 1), then bump the version.
 
@@ -102,7 +102,7 @@ All bodies are JSON. Errors use this shape:
 {"error": {"code": "...", "message": "..."}}
 ```
 
-Error codes: `unauthorized`, `not_found`, `validation_failed`, `slot_unavailable`, `hold_expired`, `crisis_detected`, `llm_unavailable`, `rate_limited`, `conflict`.
+Error codes: `unauthorized`, `not_found`, `validation_failed`, `slot_unavailable`, `hold_expired`, `crisis_detected`, `llm_unavailable`, `rate_limited`, `conflict`, `internal` (unexpected failure, nothing changed; added in v1.1).
 
 Auth headers:
 

@@ -37,6 +37,8 @@ export const ErrorCode = z.enum([
   'llm_unavailable',
   'rate_limited',
   'conflict',
+  /** Unexpected server failure; nothing was changed. */
+  'internal',
 ]);
 export const ErrorBody = z.strictObject({
   error: z.strictObject({ code: ErrorCode, message: z.string() }),

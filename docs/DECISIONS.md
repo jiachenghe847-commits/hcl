@@ -4,6 +4,17 @@ Newest first. Each entry gives the decision and the reason.
 
 ## 2026-11-25
 
+**D8: Contracts v1.1 adds the error code  (HTTP 500).**
+It means an unexpected failure where nothing was changed.
+Why: v1 had no honest code for unexpected errors. Flagged to the owner for review.
+
+**D7: The worker uses Hono for routing, and Vitest runs inside workerd via .**
+Why:
+- Hono gives per-feature routers and middleware (device auth, passcode) in very little code, and it is well known.
+- The plugin runs tests against real D1 (SQLite) with our migrations, so SQL-level invariants like S4 are tested for real.
+- The worker's  is pinned to 2026-08-15, because the installed workerd supports up to 2026-08-22.
+
+
 **D6: Run our own agent loop on the Messages API, not a hosted agent service.**
 Why:
 - Tools must read and write our D1 database.
