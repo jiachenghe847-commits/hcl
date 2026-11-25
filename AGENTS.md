@@ -33,8 +33,17 @@ Done:
 
 - Agent screens: assistant start (device-side crisis check and redaction), proposal with disclosure preview and per-item sharing, action trace, demo counsellor view. Locally they run on the scripted provider (D10).
 
+- Deployed: https://haven-agent.haven-worker.workers.dev (Cloudflare account of the owner; D1 `haven`).
+  - The agent is off in production (no LLM configured, so the UI offers manual booking).
+  - The counsellor view stays locked until the `DEMO_COUNSELLOR_PASSCODE` secret is set.
+
 Next:
-1. Deploy (Workers Static Assets for `apps/web/dist`), then a first real-API run with `ANTHROPIC_API_KEY` in `.dev.vars`
+1. Owner decides the production agent mode (scripted demo vs. real key) and sets the passcode secret.
+2. First real-API run with `ANTHROPIC_API_KEY`; then update the SUS tasks for the agent flow.
+
+Deploy (from the repo root, logged in with `npx wrangler login`):
+- `npm run deploy` builds `apps/web` and deploys the worker with the web build as static assets.
+- When a migration is added, run `npm run db:migrate:remote -w @haven/worker` first.
 
 ## Map
 

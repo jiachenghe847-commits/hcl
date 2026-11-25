@@ -7,8 +7,8 @@
     {
       "binding": "DB",
       "database_name": "haven",
-      // Replace with the real id after `wrangler d1 create haven` (deployment step). Local dev and tests ignore it.
-      "database_id": "00000000-0000-0000-0000-000000000000",
+      // Created 2026-11-26 in the owner's Cloudflare account. Local dev and tests use a local copy.
+      "database_id": "1de208c4-4bb5-4ff3-839a-246799e48e83",
       "migrations_dir": "migrations"
     }
   ],
