@@ -6,7 +6,9 @@
     "dev": "wrangler dev",
     "test": "vitest run",
     "typecheck": "tsc -p tsconfig.json",
-    "db:migrate:local": "wrangler d1 migrations apply haven --local"
+    "db:migrate:local": "wrangler d1 migrations apply haven --local",
+    "deploy": "wrangler deploy",
+    "db:migrate:remote": "wrangler d1 migrations apply haven --remote"
   },
   "devDependencies": {
     "@cloudflare/vitest-plugin": "^1.9.2",

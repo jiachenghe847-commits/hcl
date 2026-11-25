@@ -12,6 +12,13 @@
       "migrations_dir": "migrations"
     }
   ],
-  "triggers": { "crons": ["17 * * * *"] }
+  "triggers": { "crons": ["17 * * * *"] },
+  // One URL for everything (DECISIONS.md D2): the worker answers /api/*, Cloudflare serves the web build for the rest.
+  // Build it first: `npm run build -w @haven/web` (the root `npm run deploy` does both).
+  "assets": {
+    "directory": "../web/dist",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*"]
+  }
   // Secrets: ANTHROPIC_API_KEY and DEMO_COUNSELLOR_PASSCODE, `.dev.vars` locally, `wrangler secret put` when deployed.
 }
