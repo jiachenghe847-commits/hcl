@@ -39,8 +39,9 @@ Done:
   - The counsellor view stays locked until the `DEMO_COUNSELLOR_PASSCODE` secret is set.
 
 Next:
-1. Owner decides the production agent mode (scripted demo vs. real key) and sets the passcode secret.
-2. First real-API run with `ANTHROPIC_API_KEY`; then update the SUS tasks for the agent flow.
+1. Owner sets the `DEMO_COUNSELLOR_PASSCODE` secret (the counsellor view stays locked until then).
+2. Update the SUS tasks and questionnaire for the agent flow (T2: let Haven book; T4: stop sharing an item).
+3. Shared GitHub repo for the team, with CI running `npm test` and `npm run typecheck`.
 
 Deploy (from the repo root, logged in with `npx wrangler login`):
 - `npm run deploy` builds `apps/web` and deploys the worker with the web build as static assets.
