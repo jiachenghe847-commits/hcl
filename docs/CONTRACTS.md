@@ -1,4 +1,4 @@
-# Contracts v1.1 (v1 approved by owner 2026-11-25; v1.1 adds error code `internal`)
+# Contracts v1.2 (v1 approved by owner 2026-11-25; v1.1 adds error code `internal`; v1.2 raises the agent time limit to 60 s)
 
 This file is the source of truth. Code and tests must match it. To change it, ask the owner first (AGENTS.md rule 1), then bump the version.
 
@@ -157,7 +157,7 @@ ConfirmRequest = {
 
 1. **Create.** `POST /agent/runs` starts a run.
    - The server runs the crisis detector first. On a hit, status becomes `crisis` and **no LLM call is made**.
-   - Otherwise the LLM loop runs. Limits: at most 8 tool calls and a 30 s wall clock.
+   - Otherwise the LLM loop runs. Limits: at most 8 tool calls and a 60 s wall clock (v1.2; was 30 s, too short for four model turns with thinking).
 2. **Loop outcome.** The loop ends with exactly one of:
    - `proposed`: exactly one slot is held by this run.
    - `failed`: no hold is left behind.

@@ -4,6 +4,15 @@ Newest first. Each entry gives the decision and the reason.
 
 ## 2026-11-25
 
+**D9: Settings for the Anthropic adapter (`apps/worker/src/llm/anthropic.ts`).**
+- Model `claude-opus-5-5`, overridable with `LLM_MODEL`. Adaptive thinking runs at effort `medium`.
+- Server-side refusal fallbacks are on (`fallbacks: "default"`, beta `server-side-fallback-2026-07-01`). If a turn is declined, the API retries it on a fallback model instead of failing the run.
+- Automatic prompt caching is on, so the loop's growing prefix is reused across turns.
+- The agent time limit rises from 30 s to 60 s (contracts v1.2).
+
+Why: multi-step tool use benefits from thinking, and `medium` keeps latency and cost reasonable within the RM150 budget. Fallbacks avoid dead-ends on safety-adjacent mental-health wording.
+Flagged to the owner: model, effort, fallbacks and the 60 s limit.
+
 **D8: Contracts v1.1 adds the error code `internal` (HTTP 500).**
 It means an unexpected failure where nothing was changed.
 Why: v1 had no honest code for unexpected errors. Flagged to the owner for review.

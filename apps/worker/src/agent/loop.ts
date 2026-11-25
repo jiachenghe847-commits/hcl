@@ -1,6 +1,6 @@
 /**
  * The agent loop: model ↔ tools until submit_proposal succeeds, or the limits are hit (CONTRACTS.md §5).
- * Limits: 8 tool calls and a 30 s wall clock. Every step is written to the trace.
+ * Limits: 8 tool calls and a 60 s wall clock. Every step is written to the trace.
  * Any failure leaves no hold behind (the caller releases holds on a non-proposal result).
  */
 import type { AgentRunRequest } from '@haven/contracts';
@@ -11,7 +11,8 @@ import type { RunRow, Trace } from './runs.js';
 import { runTool, TOOL_SPECS, ToolInputError } from './tools.js';
 
 export const MAX_TOOL_CALLS = 8;
-export const MAX_WALL_MS = 30_000;
+/** 60 s: four model turns with adaptive thinking need more than the 30 s first planned (CONTRACTS.md v1.2). */
+export const MAX_WALL_MS = 60_000;
 
 export type LoopResult = { ok: true; built: BuiltProposal } | { ok: false; reason: string };
 
@@ -50,6 +51,8 @@ export async function runLoop(deps: {
     await deps.trace.add('llm_turn', `Model turn: ${calls.length} tool call(s), stop=${turn.stopReason}`, turn.usage ?? null);
 
     if (turn.stopReason === 'refusal') return { ok: false, reason: 'model declined' };
+    // A tool input cut off at max_tokens may parse as a valid partial object: never run it.
+    if (turn.stopReason === 'max_tokens') return { ok: false, reason: 'model output was cut off' };
     if (calls.length === 0) return { ok: false, reason: `model stopped without a proposal (${turn.stopReason})` };
 
     const results: ToolResult[] = [];

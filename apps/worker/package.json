@@ -14,8 +14,9 @@
     "wrangler": "^4.124.0"
   },
   "dependencies": {
-    "hono": "^4.13.22",
+    "@anthropic-ai/sdk": "^1.14.0",
     "@haven/contracts": "*",
-    "@haven/safety": "*"
+    "@haven/safety": "*",
+    "hono": "^4.13.22"
   }
 }

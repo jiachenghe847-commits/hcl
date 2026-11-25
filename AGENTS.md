@@ -27,12 +27,12 @@ Done:
 - `packages/contracts`
 - `apps/worker`: catalog, manual booking, cancel/revoke, counsellor view (S4–S7)
 - `apps/worker/src/agent`: run lifecycle, loop, tools, confirm, rate limits, 24 h cleanup cron. Tested with a scripted fake LLM (`test/fake-llm.ts`).
+- `apps/worker/src/llm/anthropic.ts`: tested against a fake Messages API only. It has **not been run against the real API yet**, because no key is configured.
 
 Next:
-1. Anthropic adapter (`src/llm/`)
-2. Port `apps/web` from the prototype
-3. Agent screens
-4. Deploy
+1. Port `apps/web` from the prototype
+2. Agent screens
+3. Deploy, then a first real-API run with `ANTHROPIC_API_KEY` in `.dev.vars`
 
 ## Map
 
