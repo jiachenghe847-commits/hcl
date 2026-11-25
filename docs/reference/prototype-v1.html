@@ -1,0 +1,948 @@
+<title>Haven Campus Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&display=swap">
+<style>
+/* Layout: a phone-sized app centred on a quiet backdrop; on desktop a test-task card sits beside it, on phones the app fills the screen. */
+:root {
+  --backdrop: #E3EAE8;
+  --surface: #F6F8F7;
+  --card: #FFFFFF;
+  --ink: #1C2B2D;
+  --muted: #586A6C;
+  --line: #D3DDDA;
+  --accent: #2E6A6E;
+  --accent-soft: #D6E7E4;
+  --accent-ink: #FFFFFF;
+  --sos: #B3342B;
+  --sos-soft: #F6E0DC;
+  --sos-ink: #FFFFFF;
+  --ok: #2C7A4C;
+  --m1: #7A66A0; --m2: #8F96BC; --m3: #9FB2AD; --m4: #5FA393; --m5: #2C8467;
+  --shadow: 0 1px 2px rgba(28,43,45,.06), 0 8px 24px rgba(28,43,45,.08);
+  --f-display: "Bricolage Grotesque", "PingFang SC", "Noto Sans SC", "Microsoft YaHei", system-ui, sans-serif;
+  --f-body: "Atkinson Hyperlegible", "PingFang SC", "Noto Sans SC", "Microsoft YaHei", system-ui, sans-serif;
+  --r: 16px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --backdrop: #0B1112; --surface: #121B1C; --card: #1A2526; --ink: #E3ECEA; --muted: #9AACAA; --line: #2B3A3B;
+    --accent: #72B8B4; --accent-soft: #1E3A3B; --accent-ink: #0C1A1B; --sos: #EE7166; --sos-soft: #3A1E1B; --sos-ink: #1A0B09; --ok: #6CC08E;
+    --m1: #A493C8; --m2: #A6ADD3; --m3: #8FA39E; --m4: #6FBBA9; --m5: #4FB38F;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35); color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --backdrop: #0B1112; --surface: #121B1C; --card: #1A2526; --ink: #E3ECEA; --muted: #9AACAA; --line: #2B3A3B;
+  --accent: #72B8B4; --accent-soft: #1E3A3B; --accent-ink: #0C1A1B; --sos: #EE7166; --sos-soft: #3A1E1B; --sos-ink: #1A0B09; --ok: #6CC08E;
+  --m1: #A493C8; --m2: #A6ADD3; --m3: #8FA39E; --m4: #6FBBA9; --m5: #4FB38F;
+  --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35); color-scheme: dark;
+}
+html, body { height: 100%; }
+body { background: var(--backdrop); color: var(--ink); font-family: var(--f-body); font-size: 16px; line-height: 1.45; padding: 0 16px; box-sizing: border-box; }
+*, *::before, *::after { box-sizing: border-box; }
+button, input, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+.stage { display: flex; gap: 32px; justify-content: center; align-items: flex-start; padding-block: 32px; min-height: 100%; }
+.phone { width: 390px; height: 820px; max-height: calc(100vh - 64px); min-height: 640px; border-radius: 40px; background: var(--surface); box-shadow: var(--shadow); border: 1px solid var(--line); overflow: hidden; position: relative; flex: none; }
+.panel { width: 320px; flex: none; padding-top: 24px; }
+.panel h1 { font-family: var(--f-display); font-size: 28px; line-height: 1.1; margin: 0 0 8px; text-wrap: balance; }
+.panel p { color: var(--muted); margin: 0 0 16px; }
+.tasks { list-style: none; padding: 0; margin: 0 0 20px; display: grid; gap: 10px; counter-reset: t; }
+.tasks li { counter-increment: t; display: grid; grid-template-columns: 32px 1fr; gap: 10px; align-items: start; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px; }
+.tasks li::before { content: "T" counter(t); font-family: var(--f-display); font-weight: 700; color: var(--accent); font-size: 15px; padding-top: 1px; }
+@media (max-width: 760px) {
+  body { padding: 0; }
+  .stage { padding-block: 0; display: block; }
+  .phone { width: 100%; height: 100vh; height: 100dvh; max-height: none; min-height: 0; border-radius: 0; border: 0; box-shadow: none; }
+  .panel { display: none; }
+}
+body.shot { padding: 0; background: var(--surface); }
+body.shot .stage { padding-block: 0; display: block; }
+body.shot .phone { width: 100%; height: 100vh; max-height: none; min-height: 0; border-radius: 0; border: 0; box-shadow: none; }
+body.shot .panel { display: none; }
+body.shot * { transition: none !important; animation-duration: 0s !important; }
+/* Wireframe look for early-concept figures: greyscale, plain type, no shadows. */
+body.wire .phone { filter: grayscale(1) contrast(.92); }
+body.wire .proto-note { display: none; }
+body.wire { --f-display: Arial, Helvetica, sans-serif; --f-body: Arial, Helvetica, sans-serif; --shadow: none; }
+
+/* App chrome */
+.app { position: absolute; inset: 0; display: flex; flex-direction: column; }
+.topbar { flex: none; display: flex; align-items: center; gap: 8px; padding: 14px 16px 10px; min-height: 60px; }
+.topbar .title { flex: 1; min-width: 0; font-family: var(--f-display); font-weight: 700; font-size: 20px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.brand { display: flex; align-items: center; gap: 8px; }
+.brand svg { width: 26px; height: 26px; }
+.iconbtn { width: 44px; height: 44px; border-radius: 50%; border: 0; background: transparent; display: grid; place-items: center; margin-left: -10px; }
+.iconbtn svg { width: 24px; height: 24px; }
+.sosbtn { border: 0; background: var(--sos); color: var(--sos-ink); font-weight: 700; letter-spacing: .06em; border-radius: 999px; height: 40px; padding: 0 16px; display: inline-flex; align-items: center; gap: 6px; }
+.sosbtn svg { width: 16px; height: 16px; }
+.host { flex: 1; position: relative; overflow: hidden; }
+.screen { position: absolute; inset: 0; overflow-y: auto; padding: 4px 20px 28px; display: flex; flex-direction: column; gap: 16px; }
+.screen.in-r { animation: inR .26s ease-out; }
+.screen.in-l { animation: inL .26s ease-out; }
+.screen.fade { animation: fade .3s ease-out; }
+@keyframes inR { from { transform: translateX(28px); opacity: .0; } to { transform: none; opacity: 1; } }
+@keyframes inL { from { transform: translateX(-28px); opacity: .0; } to { transform: none; opacity: 1; } }
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .screen.in-r, .screen.in-l, .screen.fade { animation: none; } }
+.tabbar { flex: none; display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid var(--line); background: var(--card); padding-bottom: env(safe-area-inset-bottom, 0px); }
+.tab { border: 0; background: transparent; padding: 8px 4px 10px; display: grid; justify-items: center; gap: 2px; font-size: 12px; color: var(--muted); min-height: 56px; }
+.tab svg { width: 24px; height: 24px; }
+.tab[aria-current="page"] { color: var(--accent); font-weight: 700; }
+
+/* Type */
+h2 { font-family: var(--f-display); font-weight: 700; font-size: 28px; line-height: 1.15; margin: 0; text-wrap: balance; }
+h3 { font-family: var(--f-display); font-weight: 700; font-size: 18px; margin: 0; }
+.lead { color: var(--muted); margin: 0; }
+.eyebrow { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+.small { font-size: 13px; color: var(--muted); }
+p { margin: 0; }
+
+/* Components */
+.card { background: var(--card); border: 1px solid var(--line); border-radius: var(--r); padding: 16px; display: grid; gap: 10px; }
+.card.soft { background: var(--accent-soft); border-color: transparent; }
+.card.alert { background: var(--sos-soft); border-color: transparent; }
+.btn { border: 0; border-radius: 12px; min-height: 50px; padding: 0 18px; font-weight: 700; background: var(--accent); color: var(--accent-ink); width: 100%; }
+.btn.ghost { background: transparent; color: var(--accent); border: 1.5px solid var(--accent); }
+.btn.quiet { background: transparent; color: var(--accent); min-height: 44px; }
+.btn.danger { background: var(--sos); color: var(--sos-ink); }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.row { display: flex; gap: 10px; align-items: center; }
+.row > * { min-width: 0; }
+.stack { display: grid; gap: 10px; }
+.spacer { flex: 1; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { border: 1.5px solid var(--line); background: var(--card); border-radius: 999px; padding: 8px 14px; min-height: 40px; font-size: 15px; }
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 700; }
+.listbtn { width: 100%; text-align: left; border: 1px solid var(--line); background: var(--card); border-radius: var(--r); padding: 14px; display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center; }
+.listbtn .chev { color: var(--muted); }
+.avatar { width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center; font-family: var(--f-display); font-weight: 700; background: var(--accent-soft); color: var(--accent); flex: none; }
+.pill { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; padding: 3px 10px; border-radius: 999px; background: var(--accent-soft); color: var(--ink); font-weight: 700; }
+.pill.open { background: color-mix(in srgb, var(--ok) 18%, transparent); color: var(--ok); }
+.pill.closed { background: var(--surface); color: var(--muted); border: 1px solid var(--line); }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.progress { display: flex; gap: 6px; }
+.progress span { height: 6px; flex: 1; border-radius: 3px; background: var(--line); }
+.progress span.on { background: var(--accent); }
+.toggle { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.toggle:last-child { border-bottom: 0; }
+.toggle .txt { flex: 1; min-width: 0; }
+.switch { position: relative; width: 52px; height: 32px; border-radius: 999px; border: 0; background: var(--line); flex: none; }
+.switch::after { content: ""; position: absolute; top: 4px; left: 4px; width: 24px; height: 24px; border-radius: 50%; background: var(--card); transition: transform .2s; box-shadow: 0 1px 2px rgba(0,0,0,.2); }
+.switch[aria-checked="true"] { background: var(--accent); }
+.switch[aria-checked="true"]::after { transform: translateX(20px); }
+textarea { width: 100%; min-height: 96px; border: 1.5px solid var(--line); border-radius: 12px; padding: 12px; background: var(--card); resize: vertical; }
+.segment { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 4px; gap: 4px; }
+.segment button { border: 0; background: transparent; border-radius: 9px; min-height: 40px; font-weight: 700; color: var(--muted); }
+.segment button[aria-pressed="true"] { background: var(--card); color: var(--ink); box-shadow: 0 1px 2px rgba(0,0,0,.12); }
+.note { font-size: 13px; color: var(--muted); display: flex; gap: 8px; align-items: flex-start; }
+.note svg { width: 16px; height: 16px; flex: none; margin-top: 2px; }
+
+/* Mood scale */
+.moods { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+.mood { border: 2px solid transparent; background: var(--card); border-radius: 14px; padding: 10px 2px; display: grid; justify-items: center; gap: 6px; font-size: 13px; }
+.mood .face { width: 44px; height: 44px; }
+.mood[aria-pressed="true"] { border-color: var(--ink); font-weight: 700; }
+.energy { display: grid; gap: 8px; }
+.energy button { display: grid; grid-template-columns: 70px 1fr; align-items: center; gap: 12px; border: 2px solid var(--line); background: var(--card); border-radius: 14px; padding: 10px 14px; text-align: left; min-height: 52px; }
+.energy button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); font-weight: 700; }
+.bars { display: flex; gap: 3px; }
+.bars i { width: 10px; height: 18px; border-radius: 3px; background: var(--line); }
+.bars i.on { background: var(--accent); }
+
+/* Week strip */
+.week { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; font-size: 12px; color: var(--muted); }
+.week .d { display: grid; justify-items: center; gap: 4px; }
+.week .blob { width: 28px; height: 28px; border-radius: 50%; border: 1.5px dashed var(--line); }
+.week .today { color: var(--ink); font-weight: 700; }
+
+/* Slots */
+.days { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; }
+.day { flex: none; width: 62px; border: 1.5px solid var(--line); background: var(--card); border-radius: 12px; padding: 8px 4px; display: grid; justify-items: center; font-size: 13px; }
+.day b { font-size: 18px; font-family: var(--f-display); }
+.day[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.slots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.slot { border: 1.5px solid var(--line); background: var(--card); border-radius: 10px; min-height: 44px; font-variant-numeric: tabular-nums; }
+.slot:disabled { text-decoration: line-through; color: var(--muted); background: var(--surface); cursor: not-allowed; }
+.slot[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 700; }
+
+/* SOS */
+.svc { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; align-items: center; background: var(--card); border: 1px solid var(--line); border-radius: var(--r); padding: 14px; }
+.svc .name { font-weight: 700; }
+.svc .callbtn { grid-row: span 2; border: 0; border-radius: 999px; background: var(--accent); color: var(--accent-ink); font-weight: 700; min-height: 44px; padding: 0 18px; }
+.svc.closed .callbtn { background: var(--surface); color: var(--muted); border: 1px solid var(--line); }
+.hold { position: relative; width: 100%; min-height: 64px; border: 0; border-radius: 16px; background: var(--sos); color: var(--sos-ink); font-weight: 700; font-size: 17px; overflow: hidden; touch-action: none; user-select: none; -webkit-user-select: none; }
+.hold .fill { position: absolute; inset: 0; background: rgba(255,255,255,.28); transform-origin: left; transform: scaleX(0); }
+.hold span { position: relative; }
+.call-ring { width: 120px; height: 120px; border-radius: 50%; margin: 12px auto; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); }
+.call-ring svg { width: 44px; height: 44px; }
+.call-ring.live { animation: pulse 1.6s ease-in-out infinite; }
+@keyframes pulse { 50% { box-shadow: 0 0 0 16px color-mix(in srgb, var(--accent) 15%, transparent); } }
+.num { font-family: var(--f-display); font-size: 30px; font-weight: 700; text-align: center; font-variant-numeric: tabular-nums; user-select: all; }
+
+/* Breathe */
+.breath { width: 220px; height: 220px; margin: 16px auto; border-radius: 50%; background: var(--accent-soft); display: grid; place-items: center; transition: transform 4s ease-in-out; }
+.breath b { font-family: var(--f-display); font-size: 22px; color: var(--accent); }
+
+/* PIN */
+.pindots { display: flex; justify-content: center; gap: 16px; margin: 8px 0; }
+.pindots i { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--ink); }
+.pindots i.on { background: var(--ink); }
+.keypad { display: grid; grid-template-columns: repeat(3, 72px); gap: 14px 24px; justify-content: center; }
+.key { width: 72px; height: 72px; border-radius: 50%; border: 0; background: var(--card); font-size: 26px; font-family: var(--f-display); box-shadow: inset 0 0 0 1px var(--line); }
+.key.blank { visibility: hidden; }
+
+/* Chart */
+.chart svg { width: 100%; height: auto; display: block; }
+.legend { display: flex; gap: 16px; font-size: 13px; color: var(--muted); }
+.legend i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+
+/* Sheet + toast */
+.scrim { position: absolute; inset: 0; background: rgba(10,20,20,.45); display: flex; align-items: flex-end; z-index: 20; animation: fade .2s; }
+.sheet { background: var(--card); width: 100%; border-radius: 22px 22px 0 0; padding: 22px 20px calc(22px + env(safe-area-inset-bottom, 0px)); display: grid; gap: 12px; }
+.toast { position: absolute; left: 16px; right: 16px; bottom: 76px; background: var(--ink); color: var(--surface); border-radius: 12px; padding: 12px 16px; z-index: 30; font-weight: 700; animation: fade .2s; }
+.sample { display: inline-block; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; font-weight: 700; color: var(--muted); border: 1px dashed var(--line); border-radius: 6px; padding: 1px 6px; }
+.welcome-art { height: 210px; border-radius: 24px; background: var(--accent-soft); display: grid; place-items: center; }
+.welcome-art svg { width: 160px; height: 160px; }
+.promise { display: grid; grid-template-columns: 40px 1fr; gap: 12px; align-items: start; }
+.promise .ic { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); }
+.promise .ic svg { width: 22px; height: 22px; }
+.rolecard { width: 100%; text-align: left; border: 2px solid var(--line); background: var(--card); border-radius: var(--r); padding: 16px; display: grid; gap: 4px; }
+.rolecard[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); }
+.kv { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; font-size: 15px; }
+.kv dt { color: var(--muted); }
+.kv dd { margin: 0; font-weight: 700; }
+.ref { font-family: var(--f-display); font-size: 28px; letter-spacing: .08em; font-weight: 700; }
+</style>
+
+<div class="stage">
+  <div class="phone" id="phone"><div class="app" id="app"></div></div>
+  <aside class="panel" id="panel"></aside>
+</div>
+
+<script>
+(function () {
+"use strict";
+
+// ---------- i18n ----------
+const T = {
+  brand: ["Haven", "Haven"],
+  tagline: ["A quiet place to check in, talk to someone, or get help fast.", "一个安静的地方：记录心情、找人倾诉，或快速求助。"],
+  getStarted: ["Get started", "开始使用"],
+  needHelpNow: ["Need help right now?", "现在就需要帮助？"],
+  privacyTitle: ["Your privacy comes first", "你的隐私最重要"],
+  privacyLead: ["Here is exactly what Haven does with your information.", "以下是 Haven 如何处理你的信息。"],
+  p1t: ["Check-ins stay on this phone", "心情记录只保存在本机"],
+  p1d: ["Your moods and notes are never sent to the university.", "你的心情和笔记不会发送给学校。"],
+  p2t: ["You choose what counsellors see", "你决定咨询师能看到什么"],
+  p2d: ["Bookings show a reference code, not your name, on shared lists.", "预约在公共名单上只显示编号，不显示姓名。"],
+  p3t: ["No ads, no trackers", "没有广告，没有追踪"],
+  p3d: ["Haven is run by the university and never sells or shares data.", "Haven 由学校运营，绝不出售或共享数据。"],
+  understand: ["I understand", "我明白了"],
+  roleTitle: ["Who are you?", "你的身份是？"],
+  roleLead: ["This changes a few suggestions. You can switch later.", "这会调整部分建议，之后可以更改。"],
+  student: ["Student", "学生"],
+  studentD: ["Undergraduate, postgraduate or foundation", "本科、研究生或预科"],
+  staff: ["Academic staff", "教职员工"],
+  staffD: ["Lecturers and researchers. Never linked to HR records.", "讲师与研究人员。与人事记录完全分开。"],
+  continue: ["Continue", "继续"],
+  lockTitle: ["Add an app lock?", "设置应用锁？"],
+  lockLead: ["A 4-digit PIN keeps Haven private if someone else picks up your phone.", "四位 PIN 码可以防止别人拿到手机时看到你的内容。"],
+  skip: ["Skip for now", "暂时跳过"],
+  enterPin: ["Enter your PIN", "输入 PIN 码"],
+  confirmPin: ["Enter it once more", "再输入一次"],
+  pinMismatch: ["The PINs did not match. Try again.", "两次输入不一致，请重试。"],
+  wrongPin: ["That PIN is not right. Try again.", "PIN 码不正确，请重试。"],
+  unlockTitle: ["Haven is locked", "Haven 已锁定"],
+  forgot: ["Forgot your PIN? In this prototype, reset it from the test panel.", "忘记 PIN？在原型中可通过测试面板重置。"],
+  tabHome: ["Home", "首页"], tabMood: ["Mood", "心情"], tabBook: ["Book", "预约"], tabMe: ["Me", "我的"],
+  back: ["Back", "返回"],
+  morning: ["Good morning", "早上好"], afternoon: ["Good afternoon", "下午好"], evening: ["Good evening", "晚上好"],
+  howToday: ["How are you today?", "今天感觉怎么样？"],
+  ciTakes: ["Takes about 20 seconds. Only you can see it.", "大约 20 秒，只有你能看到。"],
+  startCheckin: ["Start check-in", "开始记录"],
+  doneToday: ["You checked in today", "今天已经记录"],
+  editToday: ["Update", "修改"],
+  thisWeek: ["This week", "本周"],
+  upcoming: ["Your next session", "你的下一次咨询"],
+  noSession: ["No sessions booked", "暂无预约"],
+  noSessionD: ["Counselling is free and confidential for all students and staff.", "心理咨询对所有学生和教职员工免费且保密。"],
+  findCounsellor: ["Find a counsellor", "找咨询师"],
+  quickTools: ["Quick tools", "快速工具"],
+  breathe1: ["Breathe for 1 minute", "呼吸练习 1 分钟"],
+  breathe1d: ["Slow your breathing", "放慢呼吸"],
+  getHelp: ["Get help now", "立即求助"],
+  getHelpD: ["Open crisis contacts", "打开紧急联系方式"],
+  step: ["Step", "第"], of: ["of", "/"],
+  moodQ: ["How is your mood right now?", "你现在的心情如何？"],
+  energyQ: ["How is your energy?", "你的精力如何？"],
+  tagsQ: ["What's on your mind?", "有什么在影响你？"],
+  tagsLead: ["Optional. Pick any that fit.", "可选，选择符合的即可。"],
+  noteLabel: ["Private note (optional)", "私人笔记（可选）"],
+  notePh: ["Write anything. It stays on this phone.", "随便写点什么，只保存在本机。"],
+  next: ["Next", "下一步"],
+  save: ["Save check-in", "保存记录"],
+  savedTitle: ["Saved privately", "已私密保存"],
+  savedLead: ["Thanks for checking in. Noticing how you feel is a good first step.", "谢谢你的记录。留意自己的感受是很好的第一步。"],
+  heavyDay: ["Heavy day?", "今天不太好？"],
+  heavyDayD: ["These might help right now.", "这些或许现在能帮到你。"],
+  streakT: ["You've had several heavy days this week", "这周你有好几天都不太好"],
+  streakD: ["Talking to a counsellor can help. It's free and confidential, and you can book in under a minute.", "和咨询师聊聊可能会有帮助。免费、保密，一分钟内即可预约。"],
+  unsafeT: ["If you are thinking about harming yourself", "如果你有伤害自己的想法"],
+  unsafeD: ["You don't have to wait. Help is available right now.", "不用等待，现在就可以获得帮助。"],
+  backHome: ["Back to home", "返回首页"],
+  mood1: ["Very low", "很低落"], mood2: ["Low", "低落"], mood3: ["Okay", "一般"], mood4: ["Good", "不错"], mood5: ["Great", "很好"],
+  en1: ["Drained", "耗尽"], en2: ["Low", "偏低"], en3: ["Steady", "平稳"], en4: ["Good", "不错"], en5: ["Full", "充沛"],
+  tExams: ["Exams", "考试"], tAssign: ["Assignments", "作业"], tMoney: ["Money", "经济"], tSleep: ["Sleep", "睡眠"], tLonely: ["Loneliness", "孤独"], tHome: ["Homesick", "想家"], tFamily: ["Family", "家庭"], tHealth: ["Health", "健康"],
+  tTeach: ["Teaching load", "教学负担"], tResearch: ["Research", "科研"], tDeadline: ["Deadlines", "截止日期"], tBalance: ["Work-life balance", "工作与生活平衡"], tPromo: ["Promotion", "晋升"],
+  moodTitle: ["Your mood", "你的心情"],
+  last7: ["Last 7 days", "最近 7 天"],
+  moodLine: ["Mood", "心情"], energyBar: ["Energy", "精力"],
+  sampleData: ["Sample data", "示例数据"],
+  themes: ["What came up most", "最常出现的主题"],
+  history: ["Check-in history", "记录历史"],
+  noThemes: ["No themes yet. Add some in your next check-in.", "还没有主题，下次记录时可以添加。"],
+  storedHere: ["Stored only on this phone.", "仅保存在本机。"],
+  bookTitle: ["Book a counsellor", "预约咨询师"],
+  bookLead: ["Free and confidential. Pick someone who suits you.", "免费且保密，选择适合你的咨询师。"],
+  staffNote: ["Staff bookings are kept separate from HR and never appear in staff records.", "教职员工的预约与人事部门完全分开，不会出现在员工档案中。"],
+  language: ["Language", "语言"], mode: ["Session type", "咨询方式"], any: ["Any", "不限"],
+  inPerson: ["In person", "面谈"], video: ["Video", "视频"], chat: ["Chat", "文字"],
+  nextFree: ["Next free", "最早可约"],
+  noMatch: ["No counsellor matches these filters. Try fewer filters.", "没有符合条件的咨询师，请减少筛选条件。"],
+  sampleCounsellors: ["Counsellors shown are fictional examples for this prototype.", "以上咨询师为原型中的虚构示例。"],
+  about: ["About", "简介"], focus: ["Focus areas", "擅长领域"], languages: ["Languages", "语言"],
+  pickDay: ["Pick a day", "选择日期"], pickTime: ["Pick a time", "选择时间"], pickMode: ["How would you like to meet?", "你希望以什么方式见面？"],
+  reviewBooking: ["Review booking", "确认预约"],
+  confirmTitle: ["Check your booking", "核对预约信息"],
+  counsellor: ["Counsellor", "咨询师"], when: ["When", "时间"], how: ["Type", "方式"], where: ["Where", "地点"],
+  roomOnline: ["Link sent 10 minutes before", "开始前 10 分钟发送链接"], roomCampus: ["Counselling Centre, Block B, Level 2", "心理咨询中心，B 栋 2 楼"],
+  useRef: ["Use a reference code instead of my name", "用编号代替我的名字"],
+  useRefD: ["Your name is not shown on the counselling room list.", "咨询室名单上不会显示你的名字。"],
+  discreet: ["Discreet reminders", "隐私提醒"],
+  discreetD: ["Notifications say only “Reminder at 10:00”.", "通知只显示“10:00 提醒”。"],
+  shareLabel: ["Anything you'd like your counsellor to know first? (optional)", "有什么想先让咨询师了解的吗？（可选）"],
+  confirmBooking: ["Confirm booking", "确认预约"],
+  bookedTitle: ["You're booked", "预约成功"],
+  bookedLead: ["We've saved this in your sessions. You'll get a discreet reminder the day before.", "已保存到你的咨询记录中，前一天会收到隐私提醒。"],
+  yourRef: ["Your reference code", "你的预约编号"],
+  refHelp: ["Show this code at the Counselling Centre reception.", "到心理咨询中心前台出示此编号即可。"],
+  done: ["Done", "完成"],
+  meTitle: ["Me", "我的"],
+  iAm: ["I am", "我的身份"],
+  mySessions: ["My sessions", "我的咨询"],
+  prefs: ["Preferences", "偏好设置"],
+  appLock: ["App lock", "应用锁"], appLockD: ["Ask for a PIN when Haven opens", "打开 Haven 时需要输入 PIN"],
+  lockNow: ["Lock now", "立即锁定"],
+  privacyData: ["Privacy and data", "隐私与数据"],
+  whatStored: ["What Haven stores", "Haven 保存了什么"],
+  deleteCheckins: ["Delete all my check-ins", "删除我的全部心情记录"],
+  deleteQ: ["Delete all check-ins?", "删除全部心情记录？"],
+  deleteD: ["This removes every mood, energy and note entry from this phone. It can't be undone.", "这会从本机删除所有心情、精力和笔记记录，且无法恢复。"],
+  delete: ["Delete", "删除"], cancel: ["Keep", "保留"],
+  deleted: ["All check-ins deleted", "已删除全部心情记录"],
+  sessionTitle: ["Session details", "咨询详情"],
+  cancelSession: ["Cancel session", "取消预约"],
+  changeTime: ["Change time", "更改时间"],
+  cancelQ: ["Cancel this session?", "取消这次预约？"],
+  cancelD: ["The time will be released for someone else. You can book again any time.", "这个时间段会释放给其他人，你随时可以重新预约。"],
+  yesCancel: ["Cancel session", "取消预约"], noKeep: ["Keep it", "保留"],
+  cancelled: ["Session cancelled", "已取消预约"],
+  sosTitle: ["Get help now", "立即求助"],
+  sosLead: ["You are not alone. Pick who you'd like to reach.", "你并不孤单。选择你想联系的对象。"],
+  danger: ["In immediate danger?", "正面临紧急危险？"],
+  call999: ["Call 999", "拨打 999"],
+  holdAlert: ["Hold to alert Campus Security", "长按通知校园保安"],
+  holdHint: ["Keep holding for 2 seconds. This shares your location with Campus Security.", "持续按住 2 秒，会把你的位置发送给校园保安。"],
+  openNow: ["Open now", "现在开放"], closedNow: ["Closed now", "现在关闭"], h24: ["24 hours", "24 小时"],
+  call: ["Call", "拨打"],
+  closedToast: ["This service is closed now. Try a 24-hour service.", "该服务现在关闭，请选择 24 小时服务。"],
+  svcCounsel: ["Campus Counselling Centre", "校园心理咨询中心"], svcCounselH: ["Mon–Fri 9:00–17:00", "周一至周五 9:00–17:00"],
+  svcSecurity: ["Campus Security", "校园保安"],
+  svcHeal: ["Talian HEAL 15555", "Talian HEAL 15555 心理热线"], svcHealH: ["Daily 8:00–24:00 · Ministry of Health", "每天 8:00–24:00 · 卫生部"],
+  svcBef: ["Befrienders KL", "Befrienders KL 情绪支持热线"], svcBefH: ["24 hours · Free and confidential", "24 小时 · 免费保密"],
+  svc999: ["Emergency services", "紧急服务"], svc999H: ["Police, ambulance, fire", "警察、救护车、消防"],
+  helpingFriend: ["I'm helping a friend", "我在帮助朋友"],
+  friendTips: ["Stay with them. Listen without judging. Remove anything they could use to hurt themselves, and call one of the services above together.", "陪在他们身边，不加评判地倾听。移走可能用来伤害自己的物品，并一起拨打上面的服务电话。"],
+  calling: ["Calling", "正在呼叫"], connected: ["Connected (simulated)", "已接通（模拟）"],
+  protoCall: ["Prototype: no real call is made.", "原型演示：不会真正拨打电话。"],
+  toCallReal: ["To call for real, dial", "如需真实求助，请拨打"],
+  campusDemo: ["Demo number", "演示号码"],
+  shareLoc: ["Share my location with responders", "与救援人员共享我的位置"],
+  whileWait: ["While you wait, breathe slowly with me.", "等待时，和我一起慢慢呼吸。"],
+  endCall: ["End call", "结束通话"],
+  alertedTitle: ["Campus Security is on the way", "校园保安正在赶来"],
+  alertedLead: ["Your location was shared (simulated). Stay where you are if it's safe.", "你的位置已共享（模拟）。如果安全，请留在原地。"],
+  protoAlert: ["Prototype: no real alert is sent.", "原型演示：不会发送真实警报。"],
+  breatheTitle: ["Breathe", "呼吸"],
+  inhale: ["Breathe in", "吸气"], hold: ["Hold", "屏住"], exhale: ["Breathe out", "呼气"],
+  breatheLead: ["In for 4, hold for 4, out for 6. Follow the circle.", "吸气 4 秒，屏住 4 秒，呼气 6 秒。跟随圆圈。"],
+  finish: ["Finish", "结束"],
+  protoPanel: ["Prototype", "原型"],
+  resetDemo: ["Reset prototype", "重置原型"],
+  resetDone: ["Prototype reset", "原型已重置"],
+  panelTitle: ["Haven usability test", "Haven 可用性测试"],
+  panelLead: ["Try each task on the phone without help. Then fill in the questionnaire your group shares with you.", "请在手机界面上独立完成每个任务，然后填写小组提供的问卷。"],
+  task1: ["Complete today's mood and energy check-in.", "完成今天的心情和精力记录。"],
+  task2: ["Book a video session with a counsellor who speaks Chinese.", "预约一位会说中文的咨询师的视频咨询。"],
+  task3: ["It is late at night and you feel unsafe. Find a service that is open now and start a call.", "深夜你感到不安全。找到一个现在开放的服务并拨打。"],
+  task4: ["Cancel the session you booked in T2.", "取消你在 T2 中预约的咨询。"],
+  task5: ["Delete all of your check-in history.", "删除你的全部心情记录。"],
+  testTasks: ["Test tasks", "测试任务"],
+  on: ["On", "开"], off: ["Off", "关"],
+  lockOnToast: ["App lock is on", "应用锁已开启"],
+  langName: ["English", "中文"],
+};
+const DAYS = { en: ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"], zh: ["周日","周一","周二","周三","周四","周五","周六"] };
+
+const COUNSELLORS = [
+  { id: "c1", name: "Dr. Tan Mei Ling", ini: "TM", langs: ["en","zh"], modes: ["inperson","video"],
+    focus: [["Anxiety","焦虑"],["Exam stress","考试压力"],["Sleep","睡眠"]],
+    about: ["Clinical counsellor who works mainly with students facing exam pressure and anxiety.", "临床咨询师，主要帮助面临考试压力和焦虑的学生。"] },
+  { id: "c2", name: "Encik Hafiz Rahman", ini: "HR", langs: ["en","ms"], modes: ["inperson","chat"],
+    focus: [["Stress","压力"],["Relationships","人际关系"],["Money worries","经济压力"]],
+    about: ["Registered counsellor with a practical, solution-focused approach.", "注册咨询师，采用务实的、以解决问题为导向的方法。"] },
+  { id: "c3", name: "Ms. Priya Nair", ini: "PN", langs: ["en"], modes: ["video","inperson"], staff: true,
+    focus: [["Burnout","职业倦怠"],["Work-life balance","工作与生活平衡"],["Staff support","教职员工支持"]],
+    about: ["Sees both students and academic staff. Staff sessions run in a separate room.", "同时接待学生和教职员工。教职员工咨询在单独的房间进行。"] },
+  { id: "c4", name: "Mr. Zhou Yang", ini: "ZY", langs: ["zh","en"], modes: ["video","chat"],
+    focus: [["Adjusting to Malaysia","适应马来西亚生活"],["Loneliness","孤独"],["Homesickness","想家"]],
+    about: ["Supports international students settling into campus life.", "帮助国际学生适应校园生活。"] },
+];
+const LANG_LABEL = { en: ["English","英语"], zh: ["中文","中文"], ms: ["Bahasa Melayu","马来语"] };
+const MODE_KEY = { inperson: "inPerson", video: "video", chat: "chat" };
+const TIMES = ["09:00","10:00","11:00","14:00","15:00","16:00"];
+
+// ---------- state ----------
+const KEY = "haven-proto-v1";
+const SHOT = /^#shot-/.test(location.hash);
+const iso = (d) => d.toISOString().slice(0, 10);
+const addDays = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
+const TODAY = (() => { const d = new Date(); d.setHours(12, 0, 0, 0); return d; })();
+
+function freshState() {
+  const seed = [4, 3, 3, 4, 2, 2];
+  const seedEnergy = [4, 3, 2, 3, 2, 2];
+  const seedTags = [["tAssign"], ["tExams","tSleep"], ["tExams"], [], ["tMoney","tLonely"], ["tExams","tSleep"]];
+  return {
+    lang: "en", role: null, onboarded: false, pin: null, lockOn: false, locked: false,
+    discreet: true, useRef: true,
+    checkins: seed.map((m, i) => ({ d: iso(addDays(TODAY, i - 6)), mood: m, energy: seedEnergy[i], tags: seedTags[i], note: "", sample: true })),
+    sessions: [], filters: { lang: null, mode: null },
+  };
+}
+let S = load();
+function load() {
+  if (SHOT) return freshState();
+  try { const raw = localStorage.getItem(KEY); if (raw) return Object.assign(freshState(), JSON.parse(raw)); } catch (e) {}
+  return freshState();
+}
+function save() { if (SHOT) return; try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+const t = (k) => (T[k] ? T[k][S.lang === "zh" ? 1 : 0] : k);
+const L = (pair) => pair[S.lang === "zh" ? 1 : 0];
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+// ---------- icons ----------
+const I = {
+  logo: '<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M6 17c0-6 4.5-11 10-11s10 5 10 11" fill="none" stroke="var(--accent)" stroke-width="2.6" stroke-linecap="round"/><path d="M10 26v-7h12v7" fill="none" stroke="var(--accent)" stroke-width="2.6" stroke-linejoin="round"/><circle cx="16" cy="14" r="2.6" fill="var(--m4)"/></svg>',
+  back: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  chev: '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  home: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11l8-6 8 6v8a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>',
+  mood: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17l5-6 4 3 4-6 5 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  book: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M4 10h16M9 3v4M15 3v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+  me: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="9" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M4 20c1.5-4 4.5-5.5 8-5.5s6.5 1.5 8 5.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+  sos: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l9 16H3z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/><path d="M12 10v4M12 17v.5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>',
+  phone: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h3l2 5-2.5 1.5a11 11 0 0 0 6 6L16 13l5 2v3a2 2 0 0 1-2 2A16 16 0 0 1 4 5a2 2 0 0 1 2-2z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>',
+  lock: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="2"/></svg>',
+  eye: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="2"/></svg>',
+  shield: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M8.5 12l2.5 2.5 4.5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  info: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 11v6M12 7.5v.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+  wind: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9h11a3 3 0 1 0-3-3M3 15h15a3 3 0 1 1-3 3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+  check: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="var(--accent-soft)"/><path d="M7.5 12.5l3 3 6-6.5" fill="none" stroke="var(--accent)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+};
+function face(level, size = 44) {
+  const mouths = { 1: "M14 31q8-6 16 0", 2: "M15 30q7-3 14 0", 3: "M15 29h14", 4: "M15 28q7 4 14 0", 5: "M14 27q8 7 16 0" };
+  return `<svg class="face" viewBox="0 0 44 44" width="${size}" height="${size}" aria-hidden="true"><circle cx="22" cy="22" r="21" fill="var(--m${level})"/><circle cx="16" cy="19" r="2.2" fill="var(--card)"/><circle cx="28" cy="19" r="2.2" fill="var(--card)"/><path d="${mouths[level]}" fill="none" stroke="var(--card)" stroke-width="2.6" stroke-linecap="round"/></svg>`;
+}
+const bars = (n) => `<span class="bars" aria-hidden="true">${[1,2,3,4,5].map((i) => `<i class="${i <= n ? "on" : ""}"></i>`).join("")}</span>`;
+
+// ---------- helpers ----------
+const todayEntry = () => S.checkins.find((c) => c.d === iso(TODAY) && !c.sample);
+const fmtDay = (isoStr, opts) => new Date(isoStr + "T12:00:00").toLocaleDateString(S.lang === "zh" ? "zh-CN" : "en-GB", opts || { weekday: "short", day: "numeric", month: "short" });
+const counsellor = (id) => COUNSELLORS.find((c) => c.id === id);
+function weekdaysAhead(n) { const out = []; let d = addDays(TODAY, 1); while (out.length < n) { if (d.getDay() !== 0 && d.getDay() !== 6) out.push(iso(d)); d = addDays(d, 1); } return out; }
+function taken(cid, day, time) { let h = 0; for (const ch of cid + day + time) h = (h * 31 + ch.charCodeAt(0)) >>> 0; return h % 3 === 0; }
+function nextFree(c) { for (const d of weekdaysAhead(10)) for (const tm of TIMES) if (!taken(c.id, d, tm)) return fmtDay(d) + " · " + tm; return "—"; }
+function greeting() { const h = new Date().getHours(); return t(h < 12 ? "morning" : h < 18 ? "afternoon" : "evening"); }
+function lowStreak() { const recent = S.checkins.slice(-4); return recent.filter((c) => c.mood <= 2).length >= 3; }
+function nowMinutes() { const n = new Date(); return n.getHours() * 60 + n.getMinutes(); }
+const SERVICES = [
+  { id: "security", name: "svcSecurity", hours: "h24", number: null, open: () => true },
+  { id: "bef", name: "svcBef", hours: "svcBefH", number: "03-7627 2929", open: () => true },
+  { id: "heal", name: "svcHeal", hours: "svcHealH", number: "15555", open: () => nowMinutes() >= 480 },
+  { id: "counsel", name: "svcCounsel", hours: "svcCounselH", number: null, open: () => { const d = new Date().getDay(); const m = nowMinutes(); return d >= 1 && d <= 5 && m >= 540 && m < 1020; } },
+  { id: "999", name: "svc999", hours: "svc999H", number: "999", open: () => true },
+];
+const tagsFor = () => S.role === "staff" ? ["tTeach","tResearch","tDeadline","tBalance","tPromo","tSleep","tHealth","tFamily"] : ["tExams","tAssign","tMoney","tSleep","tLonely","tHome","tFamily","tHealth"];
+
+// ---------- router ----------
+const app = document.getElementById("app");
+let stack = [];
+let draft = {};
+let timers = [];
+function clearTimers() { timers.forEach((x) => clearTimeout(x)); timers.forEach((x) => clearInterval(x)); timers = []; }
+function go(name, params = {}, opts = {}) {
+  if (opts.root) stack = [];
+  if (opts.replace) stack.pop();
+  stack.push({ name, params });
+  render(opts.back ? "in-l" : opts.root ? "fade" : "in-r");
+}
+function back() { if (stack.length > 1) { stack.pop(); render("in-l"); } }
+function current() { return stack[stack.length - 1]; }
+
+const TABS = ["home", "mood", "book", "me"];
+function render(anim) {
+  clearTimers();
+  const cur = current();
+  const def = SCREENS[cur.name](cur.params || {});
+  const isTab = TABS.includes(cur.name);
+  let top = "";
+  if (!def.bare) {
+    const left = isTab
+      ? `<div class="brand">${I.logo}<span class="title">${t("brand")}</span></div><div class="spacer"></div>`
+      : `<button class="iconbtn" data-act="back" aria-label="${t("back")}">${I.back}</button><div class="title">${esc(def.title || "")}</div>`;
+    const sos = def.noSos ? "" : `<button class="sosbtn" data-act="sos" aria-label="SOS: ${t("getHelp")}">${I.sos}SOS</button>`;
+    top = `<header class="topbar">${left}${sos}</header>`;
+  }
+  const tabbar = isTab ? `<nav class="tabbar" aria-label="Main">${TABS.map((k) => `<button class="tab" data-act="tab" data-to="${k}" ${k === cur.name ? 'aria-current="page"' : ""}>${I[k]}<span>${t("tab" + k[0].toUpperCase() + k.slice(1))}</span></button>`).join("")}</nav>` : "";
+  app.innerHTML = `${top}<main class="host"><section class="screen ${anim || ""}" id="screen">${def.html}</section></main>${tabbar}`;
+  document.documentElement.lang = S.lang === "zh" ? "zh-CN" : "en";
+  if (def.after) def.after(document.getElementById("screen"));
+  renderPanel();
+}
+function toast(msg) {
+  const el = document.createElement("div"); el.className = "toast"; el.setAttribute("role", "status"); el.textContent = msg;
+  app.appendChild(el); setTimeout(() => el.remove(), 2200);
+}
+function sheet(title, body, actions) {
+  const scrim = document.createElement("div"); scrim.className = "scrim";
+  scrim.innerHTML = `<div class="sheet" role="dialog" aria-modal="true" aria-label="${esc(title)}"><h3>${esc(title)}</h3><p class="lead">${esc(body)}</p>${actions.map((a, i) => `<button class="btn ${a.cls || ""}" data-i="${i}">${esc(a.label)}</button>`).join("")}</div>`;
+  scrim.addEventListener("click", (e) => {
+    if (e.target === scrim) return scrim.remove();
+    const b = e.target.closest("[data-i]"); if (!b) return;
+    scrim.remove(); const fn = actions[+b.dataset.i].run; if (fn) fn();
+  });
+  app.appendChild(scrim); scrim.querySelector("button").focus();
+}
+
+// ---------- screens ----------
+const SCREENS = {
+  welcome() {
+    return { bare: true, html: `
+      <div class="row" style="padding-top:16px"><div class="brand">${I.logo}<h3>${t("brand")}</h3></div><div class="spacer"></div>
+        <div class="segment" style="width:150px">${["en","zh"].map((l) => `<button data-act="lang" data-l="${l}" aria-pressed="${S.lang === l}">${l === "en" ? "EN" : "中文"}</button>`).join("")}</div></div>
+      <div class="welcome-art">${face(4, 120)}</div>
+      <h2>${t("tagline")}</h2>
+      <div class="spacer"></div>
+      <button class="btn" data-act="to" data-to="privacy">${t("getStarted")}</button>
+      <div class="row" style="justify-content:center"><span class="small">${t("needHelpNow")}</span><button class="btn quiet" style="width:auto;color:var(--sos)" data-act="sos">SOS</button></div>` };
+  },
+  privacy() {
+    const items = [["lock","p1t","p1d"],["eye","p2t","p2d"],["shield","p3t","p3d"]];
+    return { title: "", noSos: false, html: `
+      <h2>${t("privacyTitle")}</h2><p class="lead">${t("privacyLead")}</p>
+      <div class="stack" style="gap:18px">${items.map(([ic, a, b]) => `<div class="promise"><div class="ic">${I[ic]}</div><div><b>${t(a)}</b><p class="small">${t(b)}</p></div></div>`).join("")}</div>
+      <div class="spacer"></div><button class="btn" data-act="to" data-to="role">${t("understand")}</button>` };
+  },
+  role() {
+    return { title: "", html: `
+      <h2>${t("roleTitle")}</h2><p class="lead">${t("roleLead")}</p>
+      ${["student","staff"].map((r) => `<button class="rolecard" data-act="role" data-r="${r}" aria-pressed="${S.role === r}"><b>${t(r)}</b><span class="small">${t(r + "D")}</span></button>`).join("")}
+      <div class="spacer"></div><button class="btn" data-act="to" data-to="setpin" ${S.role ? "" : "disabled"}>${t("continue")}</button>` };
+  },
+  setpin(p) {
+    const stage = p.stage || "enter";
+    return { title: "", html: `
+      <h2>${t("lockTitle")}</h2><p class="lead">${t(stage === "confirm" ? "confirmPin" : "lockLead")}</p>
+      ${pinPad(p.msg)}
+      <button class="btn quiet" data-act="finishOnboarding">${t("skip")}</button>`,
+      after: (el) => bindPin(el, (code) => {
+        if (stage === "enter") go("setpin", { stage: "confirm", first: code }, { replace: true });
+        else if (code === p.first) { S.pin = code; S.lockOn = true; finishOnboarding(); toast(t("lockOnToast")); }
+        else go("setpin", { stage: "enter", msg: t("pinMismatch") }, { replace: true });
+      }) };
+  },
+  lock(p) {
+    return { bare: true, html: `
+      <div style="height:40px"></div><div class="brand" style="justify-content:center">${I.logo}<h3>${t("brand")}</h3></div>
+      <h2 style="text-align:center">${t("unlockTitle")}</h2><p class="lead" style="text-align:center">${t("enterPin")}</p>
+      ${pinPad(p.msg)}<p class="small" style="text-align:center">${t("forgot")}</p>
+      <button class="btn quiet" style="color:var(--sos)" data-act="sos">SOS · ${t("getHelp")}</button>`,
+      after: (el) => bindPin(el, (code) => { if (code === S.pin) { S.locked = false; save(); go("home", {}, { root: true }); } else go("lock", { msg: t("wrongPin") }, { replace: true }); }) };
+  },
+  home() {
+    const te = todayEntry();
+    const ci = te
+      ? `<div class="card"><div class="row">${face(te.mood, 48)}<div style="flex:1"><b>${t("doneToday")}</b><p class="small">${t("mood" + te.mood)} · ${t("en" + te.energy)}</p></div><button class="btn ghost" style="width:auto;min-height:40px" data-act="startCheckin">${t("editToday")}</button></div></div>`
+      : `<div class="card soft"><h3>${t("howToday")}</h3><p class="small">${t("ciTakes")}</p><button class="btn" data-act="startCheckin">${t("startCheckin")}</button></div>`;
+    const days = [...Array(7)].map((_, i) => iso(addDays(TODAY, i - 6)));
+    const week = `<div class="card"><div class="row"><h3>${t("thisWeek")}</h3><div class="spacer"></div>${S.checkins.some((c) => c.sample) ? `<span class="sample">${t("sampleData")}</span>` : ""}</div>
+      <div class="week">${days.map((d) => { const c = [...S.checkins].reverse().find((x) => x.d === d && !(d === iso(TODAY) && x.sample)); const wd = new Date(d + "T12:00:00").getDay(); return `<div class="d ${d === iso(TODAY) ? "today" : ""}">${c ? face(c.mood, 28) : '<span class="blob"></span>'}<span>${DAYS[S.lang][wd]}</span></div>`; }).join("")}</div></div>`;
+    const s = S.sessions[0];
+    const sess = s
+      ? `<button class="listbtn" data-act="session" data-id="${s.id}"><div class="avatar">${counsellor(s.cid).ini}</div><div><span class="eyebrow">${t("upcoming")}</span><div><b>${fmtDay(s.day)} · ${s.time}</b></div><div class="small">${esc(counsellor(s.cid).name)} · ${t(MODE_KEY[s.mode])}</div></div><span class="chev">${I.chev}</span></button>`
+      : `<div class="card"><b>${t("noSession")}</b><p class="small">${t("noSessionD")}</p><button class="btn ghost" data-act="tab" data-to="book">${t("findCounsellor")}</button></div>`;
+    return { html: `
+      <h2>${greeting()}</h2>
+      ${ci}${sess}${week}
+      <h3>${t("quickTools")}</h3>
+      <button class="listbtn" data-act="to" data-to="breathe"><div class="avatar">${I.wind.replace('aria-hidden="true"', 'aria-hidden="true" width="24" height="24"')}</div><div><b>${t("breathe1")}</b><div class="small">${t("breathe1d")}</div></div><span class="chev">${I.chev}</span></button>` };
+  },
+  ciMood() {
+    return { title: t("howToday"), html: `
+      ${progress(1)}<h2>${t("moodQ")}</h2>
+      <div class="moods" role="group">${[1,2,3,4,5].map((m) => `<button class="mood" data-act="setMood" data-v="${m}" aria-pressed="${draft.mood === m}">${face(m)}<span>${t("mood" + m)}</span></button>`).join("")}</div>
+      <div class="spacer"></div><button class="btn" data-act="to" data-to="ciEnergy" ${draft.mood ? "" : "disabled"}>${t("next")}</button>` };
+  },
+  ciEnergy() {
+    return { title: t("howToday"), html: `
+      ${progress(2)}<h2>${t("energyQ")}</h2>
+      <div class="energy" role="group">${[5,4,3,2,1].map((e) => `<button data-act="setEnergy" data-v="${e}" aria-pressed="${draft.energy === e}">${bars(e)}<span>${t("en" + e)}</span></button>`).join("")}</div>
+      <div class="spacer"></div><button class="btn" data-act="to" data-to="ciTags" ${draft.energy ? "" : "disabled"}>${t("next")}</button>` };
+  },
+  ciTags() {
+    return { title: t("howToday"), html: `
+      ${progress(3)}<h2>${t("tagsQ")}</h2><p class="lead">${t("tagsLead")}</p>
+      <div class="chips">${tagsFor().map((k) => `<button class="chip" data-act="tag" data-k="${k}" aria-pressed="${(draft.tags || []).includes(k)}">${t(k)}</button>`).join("")}</div>
+      <label for="ci-note"><b>${t("noteLabel")}</b></label>
+      <textarea id="ci-note" placeholder="${t("notePh")}">${esc(draft.note || "")}</textarea>
+      <p class="note">${I.lock}${t("storedHere")}</p>
+      <div class="spacer"></div><button class="btn" data-act="saveCheckin">${t("save")}</button>` };
+  },
+  ciDone() {
+    const te = todayEntry();
+    const low = te && te.mood <= 2;
+    return { title: "", html: `
+      <div style="text-align:center;display:grid;justify-items:center;gap:10px;padding-top:8px">${I.check.replace("<svg", '<svg width="72" height="72"')}<h2>${t("savedTitle")}</h2><p class="lead">${t("savedLead")}</p></div>
+      ${te && te.mood === 1 ? `<div class="card alert"><b>${t("unsafeT")}</b><p class="small" style="color:var(--ink)">${t("unsafeD")}</p><button class="btn danger" data-act="sos">${t("getHelp")}</button></div>` : ""}
+      ${lowStreak() ? `<div class="card soft"><b>${t("streakT")}</b><p class="small" style="color:var(--ink)">${t("streakD")}</p><button class="btn" data-act="tab" data-to="book">${t("findCounsellor")}</button></div>` : ""}
+      ${low ? `<div class="card"><b>${t("heavyDay")}</b><p class="small">${t("heavyDayD")}</p><button class="btn ghost" data-act="to" data-to="breathe">${t("breathe1")}</button></div>` : ""}
+      <div class="spacer"></div><button class="btn ${low ? "quiet" : ""}" data-act="tab" data-to="home">${t("backHome")}</button>` };
+  },
+  mood() {
+    const days = [...Array(7)].map((_, i) => iso(addDays(TODAY, i - 6)));
+    const pts = days.map((d) => [...S.checkins].reverse().find((c) => c.d === d) || null);
+    const W = 320, H = 150, padL = 22, padB = 22, padT = 8;
+    const x = (i) => padL + i * ((W - padL - 12) / 6);
+    const y = (v) => padT + (5 - v) * ((H - padT - padB) / 4);
+    let path = ""; pts.forEach((p, i) => { if (p) path += (path ? "L" : "M") + x(i).toFixed(1) + " " + y(p.mood).toFixed(1); });
+    const svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${t("last7")}">
+      ${[1,2,3,4,5].map((v) => `<line x1="${padL}" x2="${W - 6}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)" stroke-width="1"/><text x="2" y="${y(v) + 4}" font-size="10" fill="var(--muted)">${v}</text>`).join("")}
+      ${pts.map((p, i) => p ? `<rect x="${x(i) - 7}" y="${y(p.energy)}" width="14" height="${H - padB - y(p.energy)}" rx="3" fill="var(--accent-soft)"/>` : "").join("")}
+      <path d="${path}" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linejoin="round"/>
+      ${pts.map((p, i) => p ? `<circle cx="${x(i)}" cy="${y(p.mood)}" r="${i === 6 ? 6 : 4.5}" fill="var(--m${p.mood})" stroke="var(--card)" stroke-width="2"/>` : "").join("")}
+      ${days.map((d, i) => `<text x="${x(i)}" y="${H - 6}" font-size="11" text-anchor="middle" fill="var(--muted)" ${i === 6 ? 'font-weight="700"' : ""}>${DAYS[S.lang][new Date(d + "T12:00:00").getDay()]}</text>`).join("")}
+    </svg>`;
+    const counts = {}; S.checkins.forEach((c) => c.tags.forEach((k) => (counts[k] = (counts[k] || 0) + 1)));
+    const top = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 4);
+    const list = [...S.checkins].reverse().slice(0, 7);
+    return { html: `
+      <h2>${t("moodTitle")}</h2>
+      <div class="card chart"><div class="row"><h3>${t("last7")}</h3><div class="spacer"></div>${S.checkins.some((c) => c.sample) ? `<span class="sample">${t("sampleData")}</span>` : ""}</div>${svg}
+        <div class="legend"><span><i style="background:var(--accent)"></i>${t("moodLine")} (1–5)</span><span><i style="background:var(--accent-soft)"></i>${t("energyBar")} (1–5)</span></div></div>
+      <div class="card"><h3>${t("themes")}</h3>${top.length ? `<div class="chips">${top.map(([k, n]) => `<span class="pill">${t(k)} · ${n}</span>`).join("")}</div>` : `<p class="small">${t("noThemes")}</p>`}</div>
+      <div class="card"><h3>${t("history")}</h3>${list.length ? list.map((c) => `<div class="row">${face(c.mood, 32)}<div style="flex:1"><b>${fmtDay(c.d)}</b><div class="small">${t("mood" + c.mood)} · ${t("energyBar")} ${c.energy}/5${c.tags.length ? " · " + c.tags.map(t).join(", ") : ""}</div></div></div>`).join("") : `<p class="small">—</p>`}
+        <p class="note">${I.lock}${t("storedHere")}</p></div>` };
+  },
+  book() {
+    const f = S.filters;
+    const list = COUNSELLORS.filter((c) => (!f.lang || c.langs.includes(f.lang)) && (!f.mode || c.modes.includes(f.mode)));
+    return { html: `
+      <h2>${t("bookTitle")}</h2><p class="lead">${t("bookLead")}</p>
+      ${S.role === "staff" ? `<p class="note">${I.shield}${t("staffNote")}</p>` : ""}
+      <div class="stack"><span class="eyebrow">${t("language")}</span><div class="chips">${[null,"en","zh","ms"].map((l) => `<button class="chip" data-act="filter" data-f="lang" data-v="${l || ""}" aria-pressed="${f.lang === l}">${l ? L(LANG_LABEL[l]) : t("any")}</button>`).join("")}</div></div>
+      <div class="stack"><span class="eyebrow">${t("mode")}</span><div class="chips">${[null,"inperson","video","chat"].map((m) => `<button class="chip" data-act="filter" data-f="mode" data-v="${m || ""}" aria-pressed="${f.mode === m}">${m ? t(MODE_KEY[m]) : t("any")}</button>`).join("")}</div></div>
+      ${list.length ? list.map((c) => `<button class="listbtn" data-act="counsellor" data-id="${c.id}"><div class="avatar">${c.ini}</div><div><b>${esc(c.name)}</b><div class="small">${c.focus.map(L).join(" · ")}</div><div class="small">${c.langs.map((l) => L(LANG_LABEL[l])).join(", ")} · ${c.modes.map((m) => t(MODE_KEY[m])).join(", ")}</div><div class="small" style="color:var(--accent);font-weight:700">${t("nextFree")}: ${nextFree(c)}</div></div><span class="chev">${I.chev}</span></button>`).join("") : `<p class="lead">${t("noMatch")}</p>`}
+      <p class="note proto-note">${I.info}${t("sampleCounsellors")}</p>` };
+  },
+  counsellor(p) {
+    const c = counsellor(p.id);
+    if (!draft.cid || draft.cid !== c.id) draft = { cid: c.id, replaceId: draft.replaceId };
+    const days = weekdaysAhead(5);
+    if (!draft.day) draft.day = days[0];
+    if (!draft.mode) draft.mode = S.filters.mode && c.modes.includes(S.filters.mode) ? S.filters.mode : c.modes[0];
+    return { title: c.name, html: `
+      <div class="row"><div class="avatar" style="width:64px;height:64px;font-size:22px">${c.ini}</div><div><h3>${esc(c.name)}</h3><p class="small">${c.langs.map((l) => L(LANG_LABEL[l])).join(", ")}</p></div></div>
+      <p>${L(c.about)}</p>
+      <div class="chips">${c.focus.map((x) => `<span class="pill">${L(x)}</span>`).join("")}</div>
+      <span class="eyebrow">${t("pickMode")}</span>
+      <div class="segment">${c.modes.map((m) => `<button data-act="setMode" data-v="${m}" aria-pressed="${draft.mode === m}">${t(MODE_KEY[m])}</button>`).join("")}</div>
+      <span class="eyebrow">${t("pickDay")}</span>
+      <div class="days">${days.map((d) => { const dt = new Date(d + "T12:00:00"); return `<button class="day" data-act="setDay" data-v="${d}" aria-pressed="${draft.day === d}"><span>${DAYS[S.lang][dt.getDay()]}</span><b>${dt.getDate()}</b></button>`; }).join("")}</div>
+      <span class="eyebrow">${t("pickTime")}</span>
+      <div class="slots">${TIMES.map((tm) => `<button class="slot" data-act="setTime" data-v="${tm}" ${taken(c.id, draft.day, tm) ? "disabled" : ""} aria-pressed="${draft.time === tm}">${tm}</button>`).join("")}</div>
+      <button class="btn" data-act="to" data-to="confirm" ${draft.time ? "" : "disabled"}>${t("reviewBooking")}</button>` };
+  },
+  confirm() {
+    const c = counsellor(draft.cid);
+    return { title: t("confirmTitle"), html: `
+      <div class="card"><dl class="kv">
+        <dt>${t("counsellor")}</dt><dd>${esc(c.name)}</dd>
+        <dt>${t("when")}</dt><dd>${fmtDay(draft.day, { weekday: "long", day: "numeric", month: "long" })} · ${draft.time}</dd>
+        <dt>${t("how")}</dt><dd>${t(MODE_KEY[draft.mode])}</dd>
+        <dt>${t("where")}</dt><dd>${draft.mode === "inperson" ? t("roomCampus") : t("roomOnline")}</dd></dl></div>
+      <div class="card" style="gap:0">
+        ${toggleRow("useRef", "useRef", "useRefD")}
+        ${toggleRow("discreet", "discreet", "discreetD")}</div>
+      <label for="bk-note"><b>${t("shareLabel")}</b></label>
+      <textarea id="bk-note">${esc(draft.note || "")}</textarea>
+      <button class="btn" data-act="confirmBooking">${t("confirmBooking")}</button>` };
+  },
+  booked(p) {
+    const s = S.sessions.find((x) => x.id === p.id); const c = counsellor(s.cid);
+    return { title: "", noSos: false, html: `
+      <div style="text-align:center;display:grid;justify-items:center;gap:10px;padding-top:8px">${I.check.replace("<svg", '<svg width="72" height="72"')}<h2>${t("bookedTitle")}</h2><p class="lead">${t("bookedLead")}</p></div>
+      <div class="card"><dl class="kv"><dt>${t("counsellor")}</dt><dd>${esc(c.name)}</dd><dt>${t("when")}</dt><dd>${fmtDay(s.day)} · ${s.time}</dd><dt>${t("how")}</dt><dd>${t(MODE_KEY[s.mode])}</dd></dl></div>
+      ${s.ref ? `<div class="card soft" style="text-align:center"><span class="eyebrow">${t("yourRef")}</span><div class="ref">${s.ref}</div><p class="small" style="color:var(--ink)">${t("refHelp")}</p></div>` : ""}
+      <div class="spacer"></div><button class="btn" data-act="tab" data-to="home">${t("done")}</button>` };
+  },
+  session(p) {
+    const s = S.sessions.find((x) => x.id === p.id); if (!s) return SCREENS.me();
+    const c = counsellor(s.cid);
+    return { title: t("sessionTitle"), html: `
+      <div class="row"><div class="avatar">${c.ini}</div><div><h3>${esc(c.name)}</h3><p class="small">${c.focus.map(L).join(" · ")}</p></div></div>
+      <div class="card"><dl class="kv"><dt>${t("when")}</dt><dd>${fmtDay(s.day, { weekday: "long", day: "numeric", month: "long" })} · ${s.time}</dd><dt>${t("how")}</dt><dd>${t(MODE_KEY[s.mode])}</dd><dt>${t("where")}</dt><dd>${s.mode === "inperson" ? t("roomCampus") : t("roomOnline")}</dd>${s.ref ? `<dt>${t("yourRef")}</dt><dd>${s.ref}</dd>` : ""}</dl></div>
+      <button class="btn ghost" data-act="reschedule" data-id="${s.id}">${t("changeTime")}</button>
+      <button class="btn quiet" style="color:var(--sos)" data-act="cancelSession" data-id="${s.id}">${t("cancelSession")}</button>` };
+  },
+  me() {
+    return { html: `
+      <h2>${t("meTitle")}</h2>
+      <div class="stack"><span class="eyebrow">${t("iAm")}</span><div class="segment">${["student","staff"].map((r) => `<button data-act="roleSwitch" data-r="${r}" aria-pressed="${S.role === r}">${t(r)}</button>`).join("")}</div></div>
+      <div class="stack"><span class="eyebrow">${t("mySessions")}</span>
+        ${S.sessions.length ? S.sessions.map((s) => `<button class="listbtn" data-act="session" data-id="${s.id}"><div class="avatar">${counsellor(s.cid).ini}</div><div><b>${fmtDay(s.day)} · ${s.time}</b><div class="small">${esc(counsellor(s.cid).name)} · ${t(MODE_KEY[s.mode])}</div></div><span class="chev">${I.chev}</span></button>`).join("") : `<p class="small">${t("noSession")}</p>`}</div>
+      <div class="stack"><span class="eyebrow">${t("prefs")}</span>
+        <div class="card" style="gap:0">
+          <div class="toggle"><div class="txt"><b>${t("language")}</b></div><div class="segment" style="width:150px">${["en","zh"].map((l) => `<button data-act="lang" data-l="${l}" aria-pressed="${S.lang === l}">${l === "en" ? "EN" : "中文"}</button>`).join("")}</div></div>
+          ${toggleRow("lockOn", "appLock", "appLockD")}
+          ${toggleRow("discreet", "discreet", "discreetD")}
+          ${S.lockOn && S.pin ? `<div class="toggle"><button class="btn quiet" style="width:auto;padding:0" data-act="lockNow">${t("lockNow")}</button></div>` : ""}
+        </div></div>
+      <div class="stack"><span class="eyebrow">${t("privacyData")}</span>
+        <div class="card"><b>${t("whatStored")}</b><p class="small">${t("p1d")} ${t("p2d")} ${t("p3d")}</p>
+          <button class="btn ghost" style="color:var(--sos);border-color:var(--sos)" data-act="deleteCheckins">${t("deleteCheckins")}</button></div></div>
+      <div class="stack mobile-only"><span class="eyebrow">${t("protoPanel")}</span>
+        <div class="card"><b>${t("testTasks")}</b><ol class="small" style="margin:0;padding-left:20px">${[1,2,3,4,5].map((i) => `<li>${t("task" + i)}</li>`).join("")}</ol>
+          <button class="btn quiet" data-act="reset">${t("resetDemo")}</button></div></div>` };
+  },
+  sos() {
+    const svcs = [...SERVICES].sort((a, b) => (b.open() - a.open()));
+    return { title: t("sosTitle"), noSos: true, html: `
+      <p class="lead">${t("sosLead")}</p>
+      <div class="card alert"><b>${t("danger")}</b>
+        <button class="btn danger" data-act="call" data-id="999">${I.phone.replace("<svg", '<svg width="20" height="20" style="vertical-align:-4px;margin-right:6px"')}${t("call999")}</button>
+        <button class="hold" id="hold" aria-describedby="hold-hint"><span class="fill"></span><span>${t("holdAlert")}</span></button>
+        <p class="small" id="hold-hint" style="color:var(--ink)">${t("holdHint")}</p></div>
+      ${svcs.filter((s) => s.id !== "999").map((s) => { const open = s.open(); return `<div class="svc ${open ? "" : "closed"}"><div class="name">${t(s.name)}</div><button class="callbtn" data-act="call" data-id="${s.id}" ${open ? "" : 'aria-disabled="true"'}>${t("call")}</button><div class="row" style="flex-wrap:wrap;gap:6px"><span class="pill ${open ? "open" : "closed"}"><span class="dot"></span>${t(open ? "openNow" : "closedNow")}</span><span class="small">${t(s.hours)}</span></div></div>`; }).join("")}
+      <details class="card"><summary><b>${t("helpingFriend")}</b></summary><p class="small" style="margin-top:8px">${t("friendTips")}</p></details>`,
+      after: bindHold };
+  },
+  calling(p) {
+    const s = SERVICES.find((x) => x.id === p.id);
+    return { title: "", noSos: true, html: `
+      <div style="text-align:center;display:grid;gap:6px"><span class="eyebrow" id="call-state">${t("calling")}…</span><h2>${t(s.name)}</h2></div>
+      <div class="call-ring live">${I.phone}</div>
+      <p class="note" style="justify-content:center">${I.info}${t("protoCall")}</p>
+      <div class="card" style="text-align:center"><span class="small">${s.number ? t("toCallReal") : t("campusDemo")}</span><div class="num">${s.number || "03-0000 0000"}</div></div>
+      <div class="card" style="gap:0">${toggleRow("shareLoc", "shareLoc", null, true)}</div>
+      <div class="card soft" style="text-align:center"><p>${t("whileWait")}</p><b id="breath-cue" style="font-family:var(--f-display);font-size:20px;color:var(--accent)">${t("inhale")}</b></div>
+      <button class="btn danger" data-act="endCall">${t("endCall")}</button>`,
+      after: () => {
+        timers.push(setTimeout(() => { const el = document.getElementById("call-state"); if (el) el.textContent = t("connected"); }, 2200));
+        cycleCue("breath-cue");
+      } };
+  },
+  alerted() {
+    return { title: "", noSos: true, html: `
+      <div class="call-ring" style="background:var(--sos-soft);color:var(--sos)">${I.shield}</div>
+      <h2 style="text-align:center">${t("alertedTitle")}</h2><p class="lead" style="text-align:center">${t("alertedLead")}</p>
+      <p class="note" style="justify-content:center">${I.info}${t("protoAlert")}</p>
+      <div class="card soft" style="text-align:center"><p>${t("whileWait")}</p><b id="breath-cue" style="font-family:var(--f-display);font-size:20px;color:var(--accent)">${t("inhale")}</b></div>
+      <button class="btn ghost" data-act="sosBack">${t("back")}</button>`,
+      after: () => cycleCue("breath-cue") };
+  },
+  breathe() {
+    return { title: t("breatheTitle"), html: `
+      <p class="lead" style="text-align:center">${t("breatheLead")}</p>
+      <div class="breath" id="breath"><b id="breath-word">${t("inhale")}</b></div>
+      <div class="spacer"></div><button class="btn" data-act="back">${t("finish")}</button>`,
+      after: () => {
+        const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+        const phases = [["inhale", 4000, 1.25], ["hold", 4000, 1.25], ["exhale", 6000, 0.85]];
+        let i = 0;
+        const step = () => {
+          const b = document.getElementById("breath"), w = document.getElementById("breath-word"); if (!b) return;
+          const [k, ms, sc] = phases[i % 3];
+          w.textContent = t(k); b.style.transitionDuration = ms + "ms"; if (!reduce && !SHOT) b.style.transform = `scale(${sc})`;
+          i++; timers.push(setTimeout(step, ms));
+        };
+        step();
+      } };
+  },
+};
+
+// ---------- screen helpers ----------
+function progress(n) { return `<div><span class="small">${t("step")} ${n} ${t("of")} 3</span><div class="progress" style="margin-top:6px">${[1,2,3].map((i) => `<span class="${i <= n ? "on" : ""}"></span>`).join("")}</div></div>`; }
+function toggleRow(key, label, desc, local) {
+  const val = local ? !!draft[key] : !!S[key];
+  return `<div class="toggle"><div class="txt"><b id="lbl-${key}">${t(label)}</b>${desc ? `<div class="small">${t(desc)}</div>` : ""}</div><button class="switch" role="switch" aria-checked="${val}" aria-labelledby="lbl-${key}" data-act="toggle" data-k="${key}" ${local ? 'data-local="1"' : ""}></button></div>`;
+}
+function pinPad(msg) {
+  return `<div class="pindots" aria-live="polite">${[0,1,2,3].map(() => "<i></i>").join("")}</div>
+    ${msg ? `<p class="small" style="text-align:center;color:var(--sos)" role="alert">${esc(msg)}</p>` : ""}
+    <div class="keypad">${["1","2","3","4","5","6","7","8","9","","0","⌫"].map((k) => `<button class="key ${k === "" ? "blank" : ""}" data-key="${k}" ${k === "⌫" ? 'aria-label="Delete"' : ""} ${k === "" ? 'tabindex="-1" aria-hidden="true"' : ""}>${k}</button>`).join("")}</div>`;
+}
+function bindPin(el, done) {
+  let code = "";
+  const dots = el.querySelectorAll(".pindots i");
+  const paint = () => dots.forEach((d, i) => d.classList.toggle("on", i < code.length));
+  el.querySelector(".keypad").addEventListener("click", (e) => {
+    const k = e.target.closest("[data-key]"); if (!k || !k.dataset.key) return;
+    if (k.dataset.key === "⌫") code = code.slice(0, -1); else if (code.length < 4) code += k.dataset.key;
+    paint(); if (code.length === 4) setTimeout(() => done(code), 150);
+  });
+}
+function cycleCue(id) {
+  const phases = [["inhale", 4000], ["hold", 4000], ["exhale", 6000]]; let i = 0;
+  const step = () => { const el = document.getElementById(id); if (!el) return; el.textContent = t(phases[i % 3][0]); timers.push(setTimeout(step, phases[i % 3][1])); i++; };
+  step();
+}
+function bindHold(el) {
+  const btn = el.querySelector("#hold"); if (!btn) return;
+  const fill = btn.querySelector(".fill"); let start = 0, raf = 0;
+  const DUR = 2000;
+  const tick = (now) => { const p = Math.min(1, (now - start) / DUR); fill.style.transform = `scaleX(${p})`; if (p >= 1) { stop(); go("alerted"); } else raf = requestAnimationFrame(tick); };
+  const begin = (e) => { if (e.type === "keydown" && e.key !== " " && e.key !== "Enter") return; if (e.type === "keydown") { if (e.repeat) return; e.preventDefault(); } if (start) return; start = performance.now(); raf = requestAnimationFrame(tick); };
+  const stop = () => { cancelAnimationFrame(raf); start = 0; fill.style.transform = "scaleX(0)"; };
+  btn.addEventListener("pointerdown", begin); btn.addEventListener("keydown", begin);
+  ["pointerup", "pointerleave", "pointercancel", "keyup", "blur"].forEach((ev) => btn.addEventListener(ev, stop));
+  btn.addEventListener("click", (e) => e.preventDefault());
+}
+function finishOnboarding() { S.onboarded = true; save(); go("home", {}, { root: true }); }
+
+// ---------- actions ----------
+const A = {
+  back, to: (d) => go(d.to),
+  tab: (d) => go(d.to, {}, { root: true }),
+  sos: () => { if (current().name !== "sos") go("sos"); },
+  sosBack: () => back(),
+  lang: (d) => { S.lang = d.l; save(); render("fade"); },
+  role: (d) => { S.role = d.r; save(); render(); },
+  roleSwitch: (d) => { S.role = d.r; save(); render(); },
+  finishOnboarding,
+  startCheckin: () => { const te = todayEntry(); draft = te ? { mood: te.mood, energy: te.energy, tags: [...te.tags], note: te.note } : { tags: [] }; go("ciMood"); },
+  setMood: (d) => { draft.mood = +d.v; render(); },
+  setEnergy: (d) => { draft.energy = +d.v; render(); },
+  tag: (d) => { draft.note = (document.getElementById("ci-note") || {}).value || draft.note; const tg = draft.tags || (draft.tags = []); const i = tg.indexOf(d.k); i >= 0 ? tg.splice(i, 1) : tg.push(d.k); render(); },
+  saveCheckin: () => {
+    draft.note = document.getElementById("ci-note").value;
+    S.checkins = S.checkins.filter((c) => c.d !== iso(TODAY));
+    S.checkins.push({ d: iso(TODAY), mood: draft.mood, energy: draft.energy, tags: draft.tags || [], note: draft.note || "", sample: false });
+    save(); draft = {}; go("ciDone", {}, { replace: true });
+  },
+  filter: (d) => { S.filters[d.f] = d.v || null; save(); render(); },
+  counsellor: (d) => { if (!draft.replaceId) draft = {}; go("counsellor", { id: d.id }); },
+  setMode: (d) => { draft.mode = d.v; render(); },
+  setDay: (d) => { draft.day = d.v; draft.time = null; render(); },
+  setTime: (d) => { draft.time = d.v; render(); },
+  toggle: (d) => {
+    if (d.local) { draft[d.k] = !draft[d.k]; render(); return; }
+    if (d.k === "lockOn" && !S.pin) { go("setpin", {}); return; }
+    S[d.k] = !S[d.k]; save(); render();
+  },
+  confirmBooking: () => {
+    draft.note = document.getElementById("bk-note").value;
+    const id = "s" + Date.now();
+    const ref = S.useRef ? "HV-" + String(1000 + Math.floor(Math.random() * 9000)) : null;
+    if (draft.replaceId) S.sessions = S.sessions.filter((s) => s.id !== draft.replaceId);
+    S.sessions.push({ id, cid: draft.cid, day: draft.day, time: draft.time, mode: draft.mode, ref });
+    S.sessions.sort((a, b) => (a.day + a.time).localeCompare(b.day + b.time));
+    save(); draft = {}; stack = [{ name: "home", params: {} }]; go("booked", { id });
+  },
+  session: (d) => go("session", { id: d.id }),
+  reschedule: (d) => { const s = S.sessions.find((x) => x.id === d.id); draft = { cid: s.cid, mode: s.mode, replaceId: s.id }; go("counsellor", { id: s.cid }); },
+  cancelSession: (d) => sheet(t("cancelQ"), t("cancelD"), [
+    { label: t("yesCancel"), cls: "danger", run: () => { S.sessions = S.sessions.filter((s) => s.id !== d.id); save(); go("me", {}, { root: true }); toast(t("cancelled")); } },
+    { label: t("noKeep"), cls: "quiet" }]),
+  deleteCheckins: () => sheet(t("deleteQ"), t("deleteD"), [
+    { label: t("delete"), cls: "danger", run: () => { S.checkins = []; save(); render(); toast(t("deleted")); } },
+    { label: t("cancel"), cls: "quiet" }]),
+  lockNow: () => { S.locked = true; save(); go("lock", {}, { root: true }); },
+  call: (d) => { const s = SERVICES.find((x) => x.id === d.id); if (!s.open()) { toast(t("closedToast")); return; } go("calling", { id: d.id }); },
+  endCall: () => back(),
+  reset: () => resetAll(),
+};
+app.addEventListener("click", (e) => {
+  const el = e.target.closest("[data-act]"); if (!el || el.disabled) return;
+  const fn = A[el.dataset.act]; if (fn) fn(el.dataset);
+});
+app.addEventListener("input", (e) => { if (e.target.id === "ci-note" || e.target.id === "bk-note") draft.note = e.target.value; });
+
+function resetAll() {
+  try { localStorage.removeItem(KEY); } catch (e) {}
+  S = freshState(); draft = {}; go("welcome", {}, { root: true }); toast(t("resetDone"));
+}
+
+// ---------- desktop task panel ----------
+const panel = document.getElementById("panel");
+function renderPanel() {
+  panel.innerHTML = `<h1>${t("panelTitle")}</h1><p>${t("panelLead")}</p>
+    <ol class="tasks">${[1,2,3,4,5].map((i) => `<li><span>${t("task" + i)}</span></li>`).join("")}</ol>
+    <button class="btn ghost" id="panel-reset">${t("resetDemo")}</button>`;
+  panel.querySelector("#panel-reset").onclick = resetAll;
+  document.querySelectorAll(".mobile-only").forEach((el) => { el.hidden = matchMedia("(min-width: 761px)").matches && !SHOT; });
+}
+
+// ---------- screenshot presets (local use: #shot-name) ----------
+function shotSetup(name) {
+  document.body.classList.add("shot");
+  S.onboarded = true; S.role = "student";
+  if (name.endsWith("-wf")) { document.body.classList.add("wire"); name = name.slice(0, -3); }
+  const zh = name.endsWith("-zh"); if (zh) { S.lang = "zh"; name = name.slice(0, -3); }
+  const withSession = () => { S.sessions = [{ id: "s1", cid: "c4", day: weekdaysAhead(2)[1], time: "14:00", mode: "video", ref: "HV-4827" }]; };
+  const map = {
+    welcome: () => { S.onboarded = false; S.role = null; go("welcome", {}, { root: true }); },
+    privacy: () => { stack = [{ name: "welcome" }]; go("privacy"); },
+    role: () => { stack = [{ name: "privacy" }]; go("role"); },
+    setpin: () => { stack = [{ name: "role" }]; go("setpin"); },
+    home: () => { withSession(); go("home", {}, { root: true }); },
+    "ci-mood": () => { stack = [{ name: "home" }]; draft = { mood: 2, tags: [] }; go("ciMood"); },
+    "ci-energy": () => { stack = [{ name: "home" }]; draft = { mood: 2, energy: 2, tags: [] }; go("ciEnergy"); },
+    "ci-tags": () => { stack = [{ name: "home" }]; draft = { mood: 2, energy: 2, tags: ["tExams", "tSleep"], note: "" }; go("ciTags"); },
+    "ci-done": () => { S.checkins.push({ d: iso(TODAY), mood: 2, energy: 2, tags: ["tExams"], note: "", sample: false }); stack = [{ name: "home" }]; go("ciDone"); },
+    mood: () => { S.checkins.push({ d: iso(TODAY), mood: 2, energy: 2, tags: ["tExams"], note: "", sample: false }); go("mood", {}, { root: true }); },
+    book: () => { S.filters = { lang: "zh", mode: null }; go("book", {}, { root: true }); },
+    counsellor: () => { stack = [{ name: "book" }]; draft = { cid: "c4", mode: "video", day: weekdaysAhead(5)[1], time: "14:00" }; go("counsellor", { id: "c4" }); },
+    confirm: () => { stack = [{ name: "book" }, { name: "counsellor", params: { id: "c4" } }]; draft = { cid: "c4", mode: "video", day: weekdaysAhead(5)[1], time: "14:00" }; go("confirm"); },
+    booked: () => { withSession(); stack = [{ name: "home" }]; go("booked", { id: "s1" }); },
+    session: () => { withSession(); stack = [{ name: "me" }]; go("session", { id: "s1" }); },
+    me: () => { withSession(); go("me", {}, { root: true }); },
+    sos: () => { stack = [{ name: "home" }]; go("sos"); },
+    calling: () => { stack = [{ name: "home" }, { name: "sos" }]; go("calling", { id: "bef" }); },
+    alerted: () => { stack = [{ name: "home" }, { name: "sos" }]; go("alerted"); },
+    lock: () => { S.pin = "1234"; S.lockOn = true; go("lock", {}, { root: true }); },
+    breathe: () => { stack = [{ name: "home" }]; go("breathe"); },
+  };
+  (map[name] || map.home)();
+}
+
+// ---------- boot ----------
+if (SHOT) shotSetup(location.hash.slice(6));
+else if (!S.onboarded) go("welcome", {}, { root: true });
+else if (S.lockOn && S.pin) go("lock", {}, { root: true });
+else go("home", {}, { root: true });
+})();
+</script>
