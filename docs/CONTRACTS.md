@@ -1,4 +1,4 @@
-# Contracts v0 (draft, awaiting owner approval)
+# Contracts v1 (approved by owner 2026-11-25)
 
 This file is the source of truth. Code and tests must match it. To change it, ask the owner first (AGENTS.md rule 1), then bump the version.
 
@@ -207,7 +207,7 @@ Every tool call and result is written to `agent_steps`, redacted. That table is 
 - **S7 Approved text is validated before storage.** The server checks every approved text for a phone number, email address, or student/staff ID pattern. On a match, that item is downgraded to `withhold`.
   The device runs the same check plus the user's own do-not-share names. That list never leaves the device.
 
-## 8. Open questions (owner to decide)
+## 8. Settled questions (approved 2026-11-25 as proposed)
 
 - **Q1** How long should agent runs and traces be kept? Proposed: 24 h, deleted by a cron trigger.
 - **Q2** What rate limits apply? The URL is public and calls cost money. Proposed: 20 runs per device per day and 300 runs per day globally. Requests fail closed with `rate_limited`.

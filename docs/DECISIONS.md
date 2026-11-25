@@ -1,10 +1,10 @@
 # Decisions
 
-Newest first. Each entry gives the decision and the reason. Entries marked *proposed* wait for owner approval.
+Newest first. Each entry gives the decision and the reason.
 
 ## 2026-11-25
 
-**D6 (proposed): Run our own agent loop on the Messages API, not a hosted agent service.**
+**D6: Run our own agent loop on the Messages API, not a hosted agent service.**
 Why:
 - Tools must read and write our D1 database.
 - The booking step must be deterministic server code.
