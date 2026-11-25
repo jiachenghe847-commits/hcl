@@ -7,7 +7,8 @@ export default defineConfig(async () => {
     plugins: [
       cloudflareTest({
         wrangler: { configPath: './wrangler.jsonc' },
-        miniflare: { bindings: { TEST_MIGRATIONS: migrations, DEMO_COUNSELLOR_PASSCODE: 'test-passcode' } },
+        // Tests are hermetic: no LLM regardless of .dev.vars (agent tests inject their own provider).
+        miniflare: { bindings: { TEST_MIGRATIONS: migrations, DEMO_COUNSELLOR_PASSCODE: 'test-passcode', LLM_PROVIDER: 'none' } },
       }),
     ],
     test: { setupFiles: ['./test/apply-migrations.ts'] },

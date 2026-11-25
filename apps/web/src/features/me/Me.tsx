@@ -142,6 +142,9 @@ export function Me() {
               <li key={k}>{t(k)}</li>
             ))}
           </ol>
+          <button className="btn ghost" onClick={() => nav.go('counsellorView')}>
+            {t('counsellorViewT')}
+          </button>
           <button className="btn quiet" onClick={resetPrototype}>
             {t('resetDemo')}
           </button>

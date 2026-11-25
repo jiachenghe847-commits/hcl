@@ -28,6 +28,15 @@ export function BookList() {
     <>
       <h2>{t('bookTitle')}</h2>
       <p className="lead">{t('bookLead')}</p>
+      <div className="card soft">
+        <h3>{t('agentCardT')}</h3>
+        <p className="small" style={{ color: 'var(--ink)' }}>
+          {t('agentCardD')}
+        </p>
+        <button className="btn" onClick={() => nav.go('agentStart')}>
+          {t('agentStart')}
+        </button>
+      </div>
       {state.role === 'staff' && (
         <p className="note">
           <Icon.shield />

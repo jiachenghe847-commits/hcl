@@ -31,9 +31,10 @@ Done:
 
 - `apps/web`: every prototype screen is ported to React. Booking, sessions and revoke use the real API; check-ins stay in localStorage.
 
+- Agent screens: assistant start (device-side crisis check and redaction), proposal with disclosure preview and per-item sharing, action trace, demo counsellor view. Locally they run on the scripted provider (D10).
+
 Next:
-1. Agent screens: "let Haven book for me", disclosure preview, action trace, counsellor view
-2. Deploy (Workers Static Assets for `apps/web/dist`), then a first real-API run with `ANTHROPIC_API_KEY` in `.dev.vars`
+1. Deploy (Workers Static Assets for `apps/web/dist`), then a first real-API run with `ANTHROPIC_API_KEY` in `.dev.vars`
 
 ## Map
 

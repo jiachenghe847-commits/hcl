@@ -49,6 +49,15 @@ export function Home() {
           </button>
         </div>
       )}
+      <div className="card soft">
+        <h3>{t('agentCardT')}</h3>
+        <p className="small" style={{ color: 'var(--ink)' }}>
+          {t('agentCardD')}
+        </p>
+        <button className="btn ghost" onClick={() => nav.go('agentStart')}>
+          {t('agentStart')}
+        </button>
+      </div>
       {next ? (
         <button className="listbtn" onClick={() => nav.go('session', { id: next.id })}>
           <div className="avatar">{initials(next.counsellor.displayName)}</div>

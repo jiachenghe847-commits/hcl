@@ -3,6 +3,9 @@
  * tab bar, title, SOS button. To add a screen, add an entry here and navigate with nav.go('<name>', params).
  */
 import type { ReactNode } from 'react';
+import { AgentStart } from '../features/agent/AgentStart';
+import { Proposal } from '../features/agent/Proposal';
+import { CounsellorView } from '../features/counsellor-view/CounsellorView';
 import { BookList } from '../features/booking/BookList';
 import { ConfirmBooking } from '../features/booking/ConfirmBooking';
 import { CounsellorDetail } from '../features/booking/CounsellorDetail';
@@ -50,6 +53,10 @@ export const SCREENS: Record<string, ScreenDef> = {
   confirm: { render: (p) => <ConfirmBooking name={p.name ?? ''} />, title: 'confirmTitle' },
   booked: { render: (p) => <Booked id={p.id ?? ''} /> },
   session: { render: (p) => <SessionDetail id={p.id ?? ''} />, title: 'sessionTitle' },
+
+  agentStart: { render: () => <AgentStart />, title: 'agentTitle' },
+  agentProposal: { render: () => <Proposal />, title: 'proposalTitle' },
+  counsellorView: { render: () => <CounsellorView />, title: 'counsellorViewT' },
 
   sos: { render: () => <Sos />, title: 'sosTitle', noSos: true },
   calling: { render: (p) => <Calling id={p.id ?? ''} />, noSos: true },

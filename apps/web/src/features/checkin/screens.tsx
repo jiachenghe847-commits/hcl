@@ -160,8 +160,11 @@ export function CheckinDone() {
           <p className="small" style={{ color: 'var(--ink)' }}>
             {t('streakD')}
           </p>
-          <button className="btn" onClick={() => nav.go('book', {}, { root: true })}>
-            {t('findCounsellor')}
+          <button className="btn" onClick={() => nav.go('agentStart')}>
+            {t('agentCardT')}
+          </button>
+          <button className="btn quiet" onClick={() => nav.go('book', {}, { root: true })}>
+            {t('bookManually')}
           </button>
         </div>
       )}

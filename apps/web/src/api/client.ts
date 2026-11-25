@@ -4,7 +4,19 @@
  * - Every creating POST carries an Idempotency-Key, so a double tap returns the same result.
  * - Responses are validated with the shared contract schemas.
  */
-import { Booking, Counsellor, ErrorBody, type ErrorCode, type ManualBookingRequest, Slot } from '@haven/contracts';
+import {
+  type AgentRunRequest,
+  AgentRunCreated,
+  AgentRunView,
+  Booking,
+  type ConfirmRequest,
+  Counsellor,
+  CounsellorBookingView,
+  ErrorBody,
+  type ErrorCode,
+  type ManualBookingRequest,
+  Slot,
+} from '@haven/contracts';
 import { z } from 'zod';
 
 const DEVICE_KEY = 'haven-device';
@@ -41,9 +53,10 @@ export class ApiError extends Error {
 async function request<S extends z.ZodType>(
   schema: S,
   path: string,
-  init: { method?: string; body?: unknown; idempotencyKey?: string } = {},
+  init: { method?: string; body?: unknown; idempotencyKey?: string; passcode?: string; device?: boolean } = {},
 ): Promise<z.infer<S>> {
-  const headers: Record<string, string> = { 'X-Haven-Device': deviceToken() };
+  const headers: Record<string, string> = init.device === false ? {} : { 'X-Haven-Device': deviceToken() };
+  if (init.passcode) headers['X-Haven-Demo-Passcode'] = init.passcode;
   if (init.body !== undefined) headers['content-type'] = 'application/json';
   if (init.idempotencyKey) headers['Idempotency-Key'] = init.idempotencyKey;
   let res: Response;
@@ -64,7 +77,10 @@ async function request<S extends z.ZodType>(
   return schema.parse(json);
 }
 
+const Health = z.object({ ok: z.boolean(), agentMode: z.enum(['llm', 'scripted', 'none']) });
+
 export const api = {
+  health: () => request(Health, '/health', { device: false }),
   counsellors: () => request(z.array(Counsellor), '/counsellors'),
   openSlots: (counsellorId: string) => request(z.array(Slot), `/counsellors/${encodeURIComponent(counsellorId)}/slots`),
   bookings: () => request(z.array(Booking), '/bookings'),
@@ -72,4 +88,12 @@ export const api = {
   cancelBooking: (id: string) => request(Booking, `/bookings/${encodeURIComponent(id)}/cancel`, { method: 'POST' }),
   revokeItem: (bookingId: string, itemId: string) =>
     request(Booking, `/bookings/${encodeURIComponent(bookingId)}/items/${encodeURIComponent(itemId)}/revoke`, { method: 'POST' }),
+  startAgent: (body: AgentRunRequest, idempotencyKey: string) =>
+    request(z.union([AgentRunCreated, AgentRunView]), '/agent/runs', { method: 'POST', body, idempotencyKey }),
+  agentRun: (id: string) => request(AgentRunView, `/agent/runs/${encodeURIComponent(id)}`),
+  confirmAgent: (id: string, body: ConfirmRequest) => request(Booking, `/agent/runs/${encodeURIComponent(id)}/confirm`, { method: 'POST', body }),
+  cancelAgent: (id: string) => request(AgentRunView, `/agent/runs/${encodeURIComponent(id)}/cancel`, { method: 'POST' }),
+  /** Demo counsellor view (DECISIONS.md D4): passcode, no device identity. */
+  counsellorBookings: (counsellorId: string, passcode: string) =>
+    request(z.array(CounsellorBookingView), `/counsellor/${encodeURIComponent(counsellorId)}/bookings`, { passcode, device: false }),
 };

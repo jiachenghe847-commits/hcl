@@ -2,6 +2,17 @@
 
 Newest first. Each entry gives the decision and the reason.
 
+## 2026-11-26
+
+**D10: A dev/demo-only scripted provider (`LLM_PROVIDER=scripted`, file `apps/worker/src/llm/scripted.ts`).**
+It is a rule-based stand-in that drives the same tools, loop and server checks as a real model.
+- It is never the default. The UI labels it "Demo assistant: a rule-based script, not an AI model" when `/api/health` reports `agentMode: "scripted"`.
+- Its counsellor-facing texts are fixed theme phrases, never the user's words.
+- Worker tests force `LLM_PROVIDER=none` so they never depend on `.dev.vars`.
+
+Why: the owner asked to build and test the agent screens before buying an API key. It also gives SUS testing a working fallback.
+Honest limit: the competition requires a functional AI agent, so the submitted demo should run on the real model (D9). The script is not a substitute.
+
 ## 2026-11-25
 
 **D9: Settings for the Anthropic adapter (`apps/worker/src/llm/anthropic.ts`).**

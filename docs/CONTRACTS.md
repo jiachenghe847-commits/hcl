@@ -1,4 +1,4 @@
-# Contracts v1.2 (v1 approved by owner 2026-11-25; v1.1 adds error code `internal`; v1.2 raises the agent time limit to 60 s)
+# Contracts v1.3 (v1 approved by owner 2026-11-25; v1.1 adds error code `internal`; v1.2 raises the agent time limit to 60 s; v1.3 adds `agentMode` to health)
 
 This file is the source of truth. Code and tests must match it. To change it, ask the owner first (AGENTS.md rule 1), then bump the version.
 
@@ -111,7 +111,7 @@ Auth headers:
 
 | Method + path | Auth | Side effect | Twice = |
 |---|---|---|---|
-| `GET /api/health` | none | none | same |
+| `GET /api/health` | none | none; returns `{ ok: true, agentMode: "llm" | "scripted" | "none" }` so the UI can label the demo script (v1.3) | same |
 | `GET /api/counsellors` | device | none | same |
 | `GET /api/counsellors/:id/slots?from&to` | device | none | same |
 | `POST /api/agent/runs` (`Idempotency-Key`) | device | creates run; may hold 1 slot. A crisis run returns `201` with status `crisis` (no LLM call). | same run returned, as the stored view without `userLabel` |

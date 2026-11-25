@@ -7,10 +7,11 @@ import { catalogRoutes } from './catalog/routes.js';
 import { counsellorViewRoutes } from './counsellor-view/routes.js';
 import type { AppEnv, Env } from './env.js';
 import { ApiError, errorResponse } from './http/errors.js';
+import { agentMode } from './llm/index.js';
 
 const app = new Hono<AppEnv>().basePath('/api');
 
-app.get('/health', (c) => c.json({ ok: true }));
+app.get('/health', (c) => c.json({ ok: true, agentMode: agentMode(c.env) }));
 app.route('/counsellors', catalogRoutes);
 app.route('/bookings', bookingRoutes);
 app.route('/counsellor', counsellorViewRoutes);

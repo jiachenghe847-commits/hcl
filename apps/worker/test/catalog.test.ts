@@ -6,7 +6,7 @@ import { api } from './client';
 
 describe('catalog', () => {
   it('health needs no auth', async () => {
-    expect(await api('/health', { device: null })).toEqual({ status: 200, json: { ok: true } });
+    expect(await api('/health', { device: null })).toEqual({ status: 200, json: { ok: true, agentMode: 'none' } });
   });
 
   it('rejects requests without a well-formed device token', async () => {
