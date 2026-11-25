@@ -4,6 +4,19 @@ Newest first. Each entry gives the decision and the reason.
 
 ## 2026-11-26
 
+**D11: DeepSeek adapter (`LLM_PROVIDER=deepseek`, `DEEPSEEK_API_KEY`, default model `deepseek-flash`).**
+The owner provided a DeepSeek key. The adapter (`apps/worker/src/llm/deepseek.ts`) uses plain fetch against the OpenAI-style Chat Completions API (docs read 2026-11-26).
+- Thinking mode stays on, so each assistant message, including `reasoning_content`, is replayed verbatim.
+- Invalid tool-call JSON becomes a rejected call that the model can correct.
+
+First real runs (local, fictional text): EN and ZH proposals took 9–16 s, used 5 tool calls, and cost well under 1 cent each. After prompt tuning, money and family details are withheld by default, and counsellor texts are short third-person themes.
+
+Open points for the owner:
+- Whether production uses DeepSeek.
+- DeepSeek's docs do not state API data retention or training use. Only fictional data may be entered (PNC rule), and this is a Q&A point for judges.
+- The Anthropic adapter (D9) remains available.
+
+
 **D10: A dev/demo-only scripted provider (`LLM_PROVIDER=scripted`, file `apps/worker/src/llm/scripted.ts`).**
 It is a rule-based stand-in that drives the same tools, loop and server checks as a real model.
 - It is never the default. The UI labels it "Demo assistant: a rule-based script, not an AI model" when `/api/health` reports `agentMode: "scripted"`.

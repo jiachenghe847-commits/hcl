@@ -34,7 +34,7 @@ Done:
 - Agent screens: assistant start (device-side crisis check and redaction), proposal with disclosure preview and per-item sharing, action trace, demo counsellor view. Locally they run on the scripted provider (D10).
 
 - Deployed: https://haven-agent.haven-worker.workers.dev (Cloudflare account of the owner; D1 `haven`).
-  - The agent is off in production (no LLM configured, so the UI offers manual booking).
+  - The agent is off in production (no LLM configured, so the UI offers manual booking). Locally, `.dev.vars` uses DeepSeek (D11).
   - The counsellor view stays locked until the `DEMO_COUNSELLOR_PASSCODE` secret is set.
 
 Next:

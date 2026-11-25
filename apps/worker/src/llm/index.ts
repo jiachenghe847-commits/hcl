@@ -6,6 +6,7 @@
  */
 import type { Env } from '../env.js';
 import { AnthropicProvider } from './anthropic.js';
+import { DEEPSEEK_DEFAULT_MODEL, DeepSeekProvider } from './deepseek.js';
 import type { LlmProvider } from './provider.js';
 import { ScriptedProvider } from './scripted.js';
 
@@ -15,6 +16,8 @@ export function providerFromEnv(env: Env): LlmProvider | null {
   switch (env.LLM_PROVIDER ?? 'anthropic') {
     case 'anthropic':
       return env.ANTHROPIC_API_KEY ? new AnthropicProvider(env.ANTHROPIC_API_KEY, env.LLM_MODEL ?? DEFAULT_MODEL) : null;
+    case 'deepseek':
+      return env.DEEPSEEK_API_KEY ? new DeepSeekProvider(env.DEEPSEEK_API_KEY, env.LLM_MODEL ?? DEEPSEEK_DEFAULT_MODEL) : null;
     case 'scripted':
       return new ScriptedProvider(); // dev/demo only: never the default
     default:
