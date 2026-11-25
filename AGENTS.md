@@ -25,14 +25,14 @@ Contracts v1 were approved on 2026-11-25. Update this list whenever a slice land
 Done:
 - `packages/safety`
 - `packages/contracts`
+- `apps/worker`: catalog, manual booking, cancel/revoke, counsellor view (S4–S7)
 
 Next:
-1. `apps/worker`: D1 migrations, seed and booking endpoints (S4–S6)
-2. Agent loop with a fake LLM (S2, S5)
-3. Anthropic adapter
-4. Port `apps/web` from the prototype
-5. Agent screens
-6. Deploy
+1. Agent loop with a fake LLM (S2, S5), plus rate limits and the 24 h trace cleanup
+2. Anthropic adapter
+3. Port `apps/web` from the prototype
+4. Agent screens
+5. Deploy
 
 ## Map
 
@@ -86,10 +86,10 @@ Run from the repo root (Node 20+, `npm install` once):
 
 Packages are consumed as TS source; there is no build step.
 
-Worker only (run inside apps/worker):
+Worker only (run inside `apps/worker`):
 
-- , then , serves the API on localhost:8787.
-- Local secrets live in .
+- `npm run db:migrate:local`, then `npm run dev`, serves the API on localhost:8787.
+- Local secrets live in `.dev.vars`.
 - Tests run inside workerd with a fresh migrated D1 per test file. Tests within one file share storage.
 
 When you report work, state the level you verified:
