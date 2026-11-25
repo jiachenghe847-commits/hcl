@@ -20,8 +20,19 @@ Hard dates:
 
 ## Status
 
-Contracts v0 are drafted and **awaiting owner approval**. There is no app code yet.
-Update this line whenever a slice lands.
+Contracts v1 were approved on 2026-11-25. Update this list whenever a slice lands.
+
+Done:
+- `packages/safety`
+- `packages/contracts`
+
+Next:
+1. `apps/worker`: D1 migrations, seed and booking endpoints (S4–S6)
+2. Agent loop with a fake LLM (S2, S5)
+3. Anthropic adapter
+4. Port `apps/web` from the prototype
+5. Agent screens
+6. Deploy
 
 ## Map
 
@@ -33,8 +44,8 @@ docs/DECISIONS.md    dated log of decisions and why
 docs/reference/      original single-file prototype (UI reference for the port)
 apps/web/            React + Vite + TS front end           (planned)
 apps/worker/         Cloudflare Worker: /api, agent loop    (planned)
-packages/contracts/  zod schemas + types shared by web and worker (planned)
-packages/safety/     crisis detector + redaction, pure TS   (planned)
+packages/contracts/  zod schemas + types shared by web and worker
+packages/safety/     crisis detector + redaction, pure TS
 ```
 
 Dependency direction is one-way only:
@@ -68,7 +79,12 @@ Before a large change, list its blast radius (files, endpoints, tables) in the c
 
 ## Verify
 
-Commands are defined once the scaffold lands. Expected: `npm test`, `npm run typecheck`, `npm run dev`.
+Run from the repo root (Node 20+, `npm install` once):
+
+- `npm test` runs every workspace's Vitest suite.
+- `npm run typecheck` runs `tsc` in every workspace.
+
+Packages are consumed as TS source; there is no build step.
 
 When you report work, state the level you verified:
 
